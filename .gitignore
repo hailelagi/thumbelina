@@ -27,3 +27,7 @@ tic_tac_toe-*.tar
 /tmp
 
 .idea
+
+.elixir_ls
+
+.DS_Store
