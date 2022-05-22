@@ -29,6 +29,7 @@ defmodule Thumbelina.MixProject do
       {:flow, "~> 1.0"},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
+      {:benchee, "~> 1.0", only: :dev},
       {:excoveralls, "~> 0.13", only: :test}
     ]
   end
