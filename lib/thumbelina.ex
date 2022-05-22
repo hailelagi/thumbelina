@@ -1,6 +1,10 @@
 defmodule Thumbelina do
   @moduledoc """
   Documentation for `Thumbelina`.
+
+  - can process really large image data sets
+  - pause/resume processing saving memory
+  - lazy and efficient runtime
   """
   def hello do
     :world

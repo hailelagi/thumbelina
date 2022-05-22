@@ -1,11 +1,17 @@
 defmodule Thumbelina.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/hailelagi/thumbelina"
+  @version "0.1.0"
+
+
   def project do
     [
       app: :thumbelina,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.13",
+      name: "Thumbelina",
+      source_url: @source_url,
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -19,8 +25,11 @@ defmodule Thumbelina.MixProject do
 
   defp deps do
     [
-      {:rustler, "~> 0.24.0"}
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:rustler, "~> 0.24.0"},
+      {:flow, "~> 1.0"},
+      {:dialyxir, "~> 1.1", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.13", only: :test}
     ]
   end
 end

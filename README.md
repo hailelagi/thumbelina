@@ -1,6 +1,11 @@
 # Thumbelina
 Rust backed erlang NIF for image processing. Create thumbnails fast in elixir.
 
+## features
+- can process really large image data sets concurrently in batches.
+- pause/resume processing.
+- lazy and efficient runtime.
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
