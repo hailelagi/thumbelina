@@ -20,14 +20,14 @@ erl_crash.dump
 *.ez
 
 # Ignore package tarball (built via "mix hex.build").
-tic_tac_toe-*.tar
+thumbelina-*.tar
 
+/priv
 
 # Temporary files for e.g. tests
 /tmp
 
+# Ignore IDE settings
 .idea
-
 .elixir_ls
-
 .DS_Store
