@@ -1,5 +1,13 @@
 # Thumbelina
-Rust backed erlang NIF for image processing.
+Rust backed erlang NIF for image processing. This was a fun idea/experiment combining the incredibly I/O throughput and 
+concurrency features of the BEAM and the raw processing efficiency and memory safety of rust, it turned out to be flawed. Here's why:
+
+1. CPU vs GPU programming
+(https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html)
+
+2. alternative libraries are good enough (https://sharp.pixelplumbing.com/)
+
+3. The erlang vm isn't [bad at all number crunching](https://groups.google.com/g/erlang-programming/c/zsJRI_XzYPE), there's nuanced [fine print](https://www.erlang.org/doc/efficiency_guide/myths.html)
 
 ## features
 - can process really large image data sets concurrently in batches.
