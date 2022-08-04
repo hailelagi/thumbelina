@@ -1,12 +1,12 @@
 defmodule Thumbelina.Pipeline do
   @moduledoc """
-    I/O orchestration and batch processing
+    I/O orchestration and batch processing.
   """
 
   alias Thumbelina.{Consumer, Producer}
 
   def process() do
-    # File.stream!(path, :line) |> Flow.from_enumerable()
+    # File.stream!("./archive/images/images, :line) |> Flow.from_enumerable()
     {:ok, counter} = GenStage.start_link(Producer, 0)
     {:ok, printer} = GenStage.start_link(Consumer, :ok)
 
@@ -23,13 +23,6 @@ defmodule Thumbelina.Pipeline do
     nil
   end
 
-  ## GenStage
-  # elixir process that asks for data (message contract)
-  # back pressure to producer
-  # producer -> producer_consumer -> consumer
-  # [event, event, event]
-  # demand dispatcher
-  # save
   def save() do
     nil
   end

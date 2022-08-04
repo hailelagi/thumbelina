@@ -31,3 +31,6 @@ thumbelina-*.tar
 .idea
 .elixir_ls
 .DS_Store
+
+# Ignore kaggle image data set
+/archive
