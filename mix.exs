@@ -4,7 +4,6 @@ defmodule Thumbelina.MixProject do
   @source_url "https://github.com/hailelagi/thumbelina"
   @version "0.1.0"
 
-
   def project do
     [
       app: :thumbelina,
@@ -26,7 +25,7 @@ defmodule Thumbelina.MixProject do
   defp deps do
     [
       {:rustler, "~> 0.24.0"},
-      {:flow, "~> 1.0"},
+      {:broadway, "~> 1.0"},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:benchee, "~> 1.0", only: :dev},

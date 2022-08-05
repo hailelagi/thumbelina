@@ -6,7 +6,6 @@ defmodule Thumbelina.Pipeline do
   alias Thumbelina.{Consumer, Producer}
 
   def process() do
-    # File.stream!("./archive/images/images, :line) |> Flow.from_enumerable()
     {:ok, counter} = GenStage.start_link(Producer, 0)
     {:ok, printer} = GenStage.start_link(Consumer, :ok)
 
@@ -19,7 +18,7 @@ defmodule Thumbelina.Pipeline do
 
   # change image format
   def convert() do
-    {:ok, counter} = GenStage.start_link(Producer, 0)
+    {:ok, _counter} = GenStage.start_link(Producer, 0)
     nil
   end
 
