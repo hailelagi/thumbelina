@@ -1,8 +1,7 @@
 # Thumbelina
-[![Not Maintained](https://img.shields.io/badge/Maintenance%20Level-Abandoned-orange.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
 
 Rust backed erlang NIF for image processing. This was a fun idea/experiment combining the incredible I/O throughput and 
-concurrency features of the BEAM and the raw processing efficiency and memory safety of rust, it turned out to be flawed. Here's why:
+concurrency features of the BEAM and the raw processing efficiency and memory safety of rust, it might turned out to be flawed. Here's why:
 
 1. The most [important reason](https://www.erlang.org/doc/man/erl_nif.html#lengthy_work), although rust is memory safe, and rustler catches panics before they unwind to the C interface, it is _not_ possible to pre-empt scheduling of a native call.
 I've thought about hacking around this with [enif_send](https://www.erlang.org/doc/man/erl_nif.html#enif_send) but I have yet to find a good attack on the problem.
