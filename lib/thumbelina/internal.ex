@@ -6,7 +6,7 @@ defmodule Thumbelina.Internal do
 
   use Rustler, otp_app: :thumbelina, crate: "thumbelina"
 
-  def generate_thumbnail() do
+  def image_to_buffer() do
     nil
   end
 end
