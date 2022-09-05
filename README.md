@@ -1,5 +1,7 @@
 # Thumbelina
 
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fhailelagi%2Fthumbelina%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/hailelagi/thumbelina/goto?ref=main)
+
 Rust backed erlang NIF for image processing. This was a fun idea/experiment combining the incredible I/O throughput and
 concurrency features of the BEAM and the raw processing efficiency and memory safety of rust, it might turned out to be flawed. Here's why:
 
