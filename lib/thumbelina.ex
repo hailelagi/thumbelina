@@ -1,6 +1,7 @@
 defmodule Thumbelina do
   @moduledoc """
     Library public api
+    todo: design library api
   """
 
   alias Thumbelina.Image
