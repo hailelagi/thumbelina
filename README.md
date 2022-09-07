@@ -3,9 +3,9 @@
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fhailelagi%2Fthumbelina%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/hailelagi/thumbelina/goto?ref=main)
 
 Rust backed erlang NIF for image processing. This was a fun idea/experiment combining the incredible I/O throughput and
-concurrency features of the BEAM and the raw processing efficiency and memory safety of rust, it might turned out to be flawed. Here's why:
+concurrency features of the BEAM and the raw processing efficiency and memory safety of rust. Things to consider:
 
-1. The most [important reason](https://www.erlang.org/doc/man/erl_nif.html#lengthy_work), although rust is memory safe, and rustler catches panics before they unwind to the C interface, it is _not_ possible to pre-empt scheduling of a native call.
+1. The most [important reason](https://www.erlang.org/doc/man/erl_nif.html#lengthy_work), although rust is memory safe, and rustler catches panics before they unwind to the C interface, it is _not_ possible to co-operatively schedule a native call.
 I've thought about hacking around this with [enif_send](https://www.erlang.org/doc/man/erl_nif.html#enif_send) but I have yet to find a good attack on the problem.
 
 2. alternative libraries are good enough (<https://sharp.pixelplumbing.com/>)
@@ -17,6 +17,9 @@ I've thought about hacking around this with [enif_send](https://www.erlang.org/d
 
 ## goals/features
 
+Huge thanks to the maintainers of [image](https://github.com/kipcole9/image), thumbelina adopts sub-set of its api design.
+
+- simple api for image manipulation
 - can process really large image data sets concurrently in batches.
 - pause/resume processing.
 - lazy and efficient for I/0 or CPU bound tasks.
