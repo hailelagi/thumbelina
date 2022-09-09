@@ -3,6 +3,7 @@ defmodule ThumbelinaTest do
   doctest Thumbelina
 
   test "greets the world" do
-    assert Thumbelina.hello() == :world
+    assert Thumbelina.Internal.echo("hello") == "hello"
+    assert Thumbelina.Internal.add(1, 2) == 3
   end
 end

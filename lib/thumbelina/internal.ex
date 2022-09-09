@@ -6,7 +6,6 @@ defmodule Thumbelina.Internal do
 
   use Rustler, otp_app: :thumbelina, crate: "thumbelina"
 
-  def image_to_buffer() do
-    nil
-  end
+  def add(_a, _b), do: :erlang.nif_error("not implemented")
+  def echo(_), do: :erlang.nif_error("not implemented")
 end

@@ -1,6 +1,8 @@
+
+
 #[rustler::nif]
-fn image_to_buffer(buffer: u8) {
-    ()
+fn add(a: i64, b: i64) -> i64 {
+    a + b
 }
 
 #[rustler::nif]
@@ -8,4 +10,4 @@ fn echo(s: String) -> String {
     s
 }
 
-rustler::init!("Elixir.Thumbelina", [image_to_buffer, echo]);
+rustler::init!("Elixir.Thumbelina.Internal", [add, echo]);
