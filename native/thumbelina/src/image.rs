@@ -12,6 +12,7 @@ pub struct ThumbelinaImage {
     pub height: u32,
     pub width: u32,
     pub bytes: usize,
+    pub size: u32
 }
 
 pub struct Options {
@@ -21,17 +22,40 @@ pub struct Options {
 
 #[rustler::nif]
 pub fn serialize<'a>(opts: Options, bin: Binary<'a>) -> Result<ThumbelinaImage, Error> {
-        let img = ImageReader::new(Cursor::new(bin)).decode()?;
-        let thumbelina_image = ThumbelinaImage{
+        let image = ImageReader::new(Cursor::new(bin)).decode()?;
+        let image = ThumbelinaImage{
             extension: opts.extension, 
             path: opts.path,
-            height: img.height(),
-            width: img.width(),
-            bytes: bin
+            height: image.height(),
+            width: image.width(),
+            bytes: bin,
+            size: bin.len()
         };
 
-        Ok(thumbelina_image)
+        Ok(ok(), image)
     }
+
+#[rustler::nif(schedule = "DirtyCpu")]
+pub fn serialize_dirty(opts: Options, bin: Binary) -> Result<(Atom, ThumbelinaImage), Error> {
+    match image::load_from_memory(bin.as_slice()) {
+        Ok(image) => {
+                let image = ThumbelinaImage {
+                    extension: opts.extension, 
+                    path: opts.path,
+                    height: img.height(),
+                    width: img.width(),
+                    bytes: bin,
+                    size: bin.len()
+                }
+
+
+                return Ok((ok(), image));
+            }
+    
+        Err(_) => Err(Error::BadArg)
+    }
+}
+
 
 // todo: Serialize image-rs Errors to ruster::Error
 /* 
