@@ -7,19 +7,17 @@ defmodule Thumbelina do
 
   alias Thumbelina.Image
 
-  # todo: read file data and pass to bytes
-  # @spec image_to_bytes() ::  {:ok, Image.t()} |
-  # def image_to_bytes() do
-  #   Image.new()
-  # end
-
   @doc """
     Open an image file for processing
   """
-  @spec open(String.t()) :: Image.t()
   def open(path) do
-    {:ok, binary} = File.read(path)
-    binary
+    [_, ext] = Path.extname(path) |> String.split(".")
+    ext = String.to_existing_atom(ext)
+
+    case File.read(@path <> "/abra.png") do
+      {:ok, binary} -> Image.new(ext, path, binary)
+      error -> error
+    end
   end
 
   @doc """
