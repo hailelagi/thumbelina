@@ -1,4 +1,7 @@
+// use image::{DynamicImage, GenericImageView, ImageFormat};
+// use rustler::{Atom, NifStruct, Term};
 
+mod image;
 
 #[rustler::nif]
 fn add(a: i64, b: i64) -> i64 {

@@ -3,37 +3,38 @@ defmodule Thumbelina do
     Library public api
   """
 
+  @path "./archive/images/images"
+
   alias Thumbelina.Image
 
   # todo: read file data and pass to bytes
-  # @spec image_to_bytes() ::  {:ok, Image.t()} | {:error, String.t()}
+  # @spec image_to_bytes() ::  {:ok, Image.t()} |
   # def image_to_bytes() do
   #   Image.new()
   # end
 
-   @doc """
+  @doc """
     Open an image file for processing
   """
-  def open() do
-    nil
+  @spec open(String.t()) :: Image.t()
+  def open(path) do
+    {:ok, binary} = File.read(path)
+    binary
   end
 
-  def open!() do
-    nil
-  end
+  @doc """
+    Open all the images in fire directory
+  """
+  @spec open_directory!(String.t()) :: [Image.t()]
+  def open_directory!(path, bytes \\ 2048) do
+    files = File.ls!(path)
 
-   def from_buffer(_buffer) do
-    nil
-  end
-
-  def from_file(_path) do
-    nil
+    Enum.map(files, fn file -> File.stream!(file, [], bytes) end)
   end
 
   def write() do
     nil
   end
-
 
   def write_stream() do
     nil
