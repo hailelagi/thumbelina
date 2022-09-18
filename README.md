@@ -2,7 +2,9 @@
 
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fhailelagi%2Fthumbelina%2Fbadge%3Fref%3Dmain&style=flat)](https://actions-badge.atrox.dev/hailelagi/thumbelina/goto?ref=main)
 
-Rust backed erlang NIF for image processing. This was a fun idea/experiment combining the incredible I/O throughput and
+_Work In Progress_
+
+Rust backed erlang NIF for image processing. This is a fun idea/experiment combining the incredible I/O throughput and
 concurrency features of the BEAM and the raw processing efficiency and memory safety of rust. Things to consider:
 
 1. The most [important reason](https://www.erlang.org/doc/man/erl_nif.html#lengthy_work), although rust is memory safe, and rustler catches panics before they unwind to the C interface, it is _not_ possible to co-operatively [schedule](https://github.com/erlang/otp/blob/maint/erts/emulator/internal_doc/ThreadProgress.md) a native call.
