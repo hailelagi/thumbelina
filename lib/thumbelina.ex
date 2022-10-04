@@ -3,18 +3,19 @@ defmodule Thumbelina do
     Library public api
   """
 
-  @path "./archive/images/images"
+  @path "./archive/images/images/abra.png"
 
   alias Thumbelina.Image
 
   @doc """
     Open an image file for processing
   """
-  def open(path) do
-    [_, ext] = Path.extname(path) |> String.split(".")
-    ext = String.to_existing_atom(ext)
+  def open(path \\ @path) do
+    ext = Path.extname(path)
 
-    case File.read(@path <> "/abra.png") do
+    # OPTIMISE: maybe read image resource via rust nif
+    # TODO: research is it faster to hold file locks in rust?
+    case File.read(path) do
       {:ok, binary} -> Image.new(ext, path, binary)
       error -> error
     end

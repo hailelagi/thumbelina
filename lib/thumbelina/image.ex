@@ -4,7 +4,7 @@ defmodule Thumbelina.Image do
   """
   alias Thumbelina.Internal
 
-  @type t :: %{
+  @type t :: %__MODULE__{
           extension: :png | :svg | :jpeg,
           path: String.t(),
           height: non_neg_integer(),
@@ -12,13 +12,11 @@ defmodule Thumbelina.Image do
           bytes: [byte()]
         }
 
-  defstruct extension: nil, path: nil, height: nil, width: nil, bytes: []
+  defstruct [:extension, :path, :height, :width, bytes: []]
 
   def new(ext, path, bytes) do
     if valid_extension?(ext) do
-      Options.new(ext, path, bytes)
-      |> Internal.serialize(bytes)
-      |> struct!(__MODULE__)
+      Internal.serialize(ext, path, bytes)
     else
       {:error, "invalid image format"}
     end
@@ -28,16 +26,5 @@ defmodule Thumbelina.Image do
     Internal.resize(image.bytes, width, height)
   end
 
-  defp valid_extension?(e), do: Enum.member?([:png, :svg, :jpeg], e)
-
-  defmodule Options do
-    @type t :: %{
-            extension: :png | :svg | :jpeg,
-            path: String.t(),
-          }
-
-    defstruct extension: nil, path: nil, bytes: nil
-
-    def new(e, p), do: struct!(__MODULE__, extension: e, path: p)
-  end
+  defp valid_extension?(e), do: Enum.member?([".png", ".svg", ".jpeg"], e)
 end
