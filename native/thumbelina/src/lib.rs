@@ -1,7 +1,14 @@
 mod thumbelina;
-mod image;
 
-rustler::init!("Elixir.Thumbelina.Internal", [
-    thumbelina::add, 
-    image::serialize
-    ]);
+use rustler::{Env, Term};
+
+fn load(env: Env, _: Term) -> bool {
+    rustler::resource!(thumbelina::ImageMetadata, env);
+    true
+}
+
+rustler::init!(
+    "Elixir.Thumbelina.Internal",
+    [thumbelina::serialize],
+    load = load
+);
