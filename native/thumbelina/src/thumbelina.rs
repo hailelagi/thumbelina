@@ -47,6 +47,7 @@ pub fn serialize<'a>(
         size: img.into_bytes().capacity(),
     };
 
+    // TODO: serialise Vec<u8> to <<u8>>
     Ok((Binary::to_term(img.into_bytes()), meta))
 }
 
