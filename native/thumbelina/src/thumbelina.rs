@@ -1,5 +1,5 @@
-use image::{io::Reader as ImageReader, imageops::FilterType::Nearest};
-use rustler::{resource, Binary, Env, Error, NifResult, NifStruct, OwnedBinary};
+use image::{imageops::FilterType::Nearest, io::Reader as ImageReader};
+use rustler::{Binary, Encoder, Env, Error, NifResult, NifStruct};
 use std::io::Cursor;
 
 mod atoms {
@@ -13,7 +13,6 @@ pub struct ImageMetadata {
     pub path: String,
     pub height: u32,
     pub width: u32,
-    pub size: usize,
     // TODO: figure out how to embed the byte data into the return struct
     // pub resource: Binary<u8>
 }
@@ -24,19 +23,18 @@ pub fn serialize<'a>(
     extension: String,
     path: String,
     bin: Binary<'a>,
-) -> Result<(Binary<'a>, ImageMetadata), Error> {
+) -> NifResult<(Binary<'a>, ImageMetadata)> {
     // it works?
     let mut resource = bin.to_owned().ok_or(Error::Term(Box::new("uh oh! :(")))?;
 
-    // FIXME: unnecessary double move
-    let img = ImageReader::new(Cursor::new(resource.to_owned()))
+    let img = ImageReader::new(Cursor::new(resource.as_mut()))
         .with_guessed_format()
         .unwrap()
         .decode()
         .unwrap();
-        // TODO: impl error propagation traits
+    // TODO: impl error propagation traits
 
-    let img = img.resize(50, 25, Nearest);
+    let img = img.resize(100, 100, Nearest);
 
     // let image = ImageReader::new(Cursor::new(bin)).decode()?;
     let meta = ImageMetadata {
@@ -44,11 +42,13 @@ pub fn serialize<'a>(
         path,
         height: img.height(),
         width: img.width(),
-        size: img.into_bytes().capacity(),
     };
 
-    // TODO: serialise Vec<u8> to <<u8>>
-    Ok((Binary::to_term(img.into_bytes()), meta))
+    match Binary::from_term(img.into_bytes().encode(env)) {
+        Ok(bin) => Ok((bin, meta)),
+        // FIXME: could not decode bytes return original image data
+        Err(_err) => Ok((Binary::from_owned(resource, env), meta)),
+    }
 }
 
 // #[rustler::nif(schedule = "DirtyCpu")]
