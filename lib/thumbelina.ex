@@ -21,6 +21,12 @@ defmodule Thumbelina do
     end
   end
 
+  def test do
+    {:ok, {_, b}} =  open()
+
+    File.write!("./test.png",b)
+  end
+
   @doc """
     Open all the images in fire directory
   """
