@@ -22,9 +22,9 @@ defmodule Thumbelina.Image do
     end
   end
 
-  def resize(%__MODULE__{} = image, width, height) do
-    Internal.resize(image.bytes, width, height)
-  end
+  # def resize(%__MODULE__{} = image, width, height) do
+  #   Internal.resize(image.bytes, width, height)
+  # end
 
-  defp valid_extension?(e), do: Enum.member?([".png", ".svg", ".jpeg"], e)
+  defp valid_extension?(e), do: Enum.member?([".png", ".jpg", ".jpeg"], e)
 end

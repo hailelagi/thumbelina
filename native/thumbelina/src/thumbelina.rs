@@ -1,6 +1,5 @@
-use image::{imageops::FilterType::Nearest, io::Reader as ImageReader};
-use rustler::{Binary, Encoder, Env, Error, NifResult, NifStruct};
-use std::io::Cursor;
+use image::{imageops::FilterType::Nearest, ImageFormat};
+use rustler::{Atom, Binary, Encoder, Env, Error, NifResult, NifStruct};
 
 mod atoms {
     rustler::atoms! {ok, error, png, jpeg, svg}
@@ -13,65 +12,71 @@ pub struct ImageMetadata {
     pub path: String,
     pub height: u32,
     pub width: u32,
-    // TODO: figure out how to embed the byte data into the return struct
-    // pub resource: Binary<u8>
 }
 
 #[rustler::nif]
-pub fn serialize<'a>(
+pub fn serialize<'a, 's>(
     env: Env<'a>,
-    extension: String,
+    extension: &'a str,
     path: String,
     bin: Binary<'a>,
-) -> NifResult<(Binary<'a>, ImageMetadata)> {
-    // it works?
-    let mut resource = bin.to_owned().ok_or(Error::Term(Box::new("uh oh! :(")))?;
+) -> NifResult<(Atom, (ImageMetadata, Binary))> {
+    let mut resource = bin
+        .to_owned()
+        .ok_or(Error::Term(Box::new("uh oh! this binary is invalid")))?;
 
-    let img = ImageReader::new(Cursor::new(resource.as_mut()))
-        .with_guessed_format()
-        .unwrap()
-        .decode()
-        .unwrap();
-    // TODO: impl error propagation traits
+    let format = match extension {
+        ".png" => ImageFormat::Png,
+        ".jpg" | ".jpeg" => ImageFormat::Jpeg,
+        ".webp" => ImageFormat::WebP,
+        ".gif" => ImageFormat::Gif,
+        _ => ImageFormat::Png,
+    };
 
+    let img_buffer = resource.as_mut();
+    // FIXME: binary data is zeroed? wtf?
+    let img = image::load_from_memory_with_format(img_buffer, format).unwrap();
     let img = img.resize(100, 100, Nearest);
 
-    // let image = ImageReader::new(Cursor::new(bin)).decode()?;
     let meta = ImageMetadata {
-        extension,
+        extension: String::from(extension),
         path,
         height: img.height(),
         width: img.width(),
     };
 
     match Binary::from_term(img.into_bytes().encode(env)) {
-        Ok(bin) => Ok((bin, meta)),
-        // FIXME: could not decode bytes return original image data
-        Err(_err) => Ok((Binary::from_owned(resource, env), meta)),
+        Ok(bin) => Ok((atoms::ok(), (meta, bin))),
+        Err(err) => Err(err),
     }
 }
 
 // #[rustler::nif(schedule = "DirtyCpu")]
-// pub fn serialize_dirty(opts: Options, bin: Binary) -> Result<(Atom, ThumbelinaImage), Error> {
+// pub fn serialize_dirty<'a, 's>(
+//     env: Env<'a>,
+//     extension: &'a str,
+//     path: String,
+//     bin: Binary<'a>,
+// ) -> NifResult<(Atom, (ImageMetadata, Binary))> {
+
 //     match image::load_from_memory(bin.as_slice()) {
 //         Ok(image) => {
-//                 let image = ThumbelinaImage {
-//                     extension: opts.extension,
-//                     path: opts.path,
-//                     height: image.height(),
-//                     width: image.width(),
-//                     bytes: bin,
-//                     size: bin.len()
-//                 };
+//             let image = ImageMetadata {
+//                 extension: opts.extension,
+//                 path: opts.path,
+//                 height: image.height(),
+//                 width: image.width(),
+//                 bytes: bin,
+//                 size: bin.len(),
+//             };
 
-//                 return Ok((ok(), image));
-//             }
+//             return Ok((atoms::ok(), image));
+//         }
 
-//         Err(_) => Err(Error::BadArg)
+//         Err(_) => Err(Error::BadArg),
 //     }
 // }
 
-// todo: Serialize image-rs Errors to ruster::Error
 /*
 impl From<ImageError> for Error {
 
