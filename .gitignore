@@ -34,3 +34,6 @@ thumbelina-*.tar
 
 # Ignore kaggle image data set
 /archive
+
+# Ignore fleet
+.fleet

@@ -1,6 +1,6 @@
-use std::io::{Cursor, Write};
 use image::{imageops::FilterType::Nearest, ImageFormat};
-use rustler::{Atom, Binary, Env, Error, NifResult, NifStruct, OwnedBinary};
+use rustler::{Atom, Binary, Error, NifResult, NifStruct};
+use std::io::Cursor;
 
 mod atoms {
     rustler::atoms! {ok, error, png, jpeg, svg}
@@ -17,15 +17,10 @@ pub struct ImageMetadata {
 
 #[rustler::nif]
 pub fn serialize<'a>(
-    env: Env<'a>,
     extension: &'a str,
     path: String,
     bin: Binary<'a>,
 ) -> NifResult<(Atom, (ImageMetadata, Vec<u8>))> {
-    let mut resource = bin
-        .to_owned()
-        .ok_or(Error::Term(Box::new("uh oh! this binary is invalid")))?;
-
     let format = match extension {
         ".png" => ImageFormat::Png,
         ".jpg" | ".jpeg" => ImageFormat::Jpeg,
@@ -34,7 +29,7 @@ pub fn serialize<'a>(
         _ => ImageFormat::Png,
     };
 
-    let img_buffer = resource.as_slice();
+    let img_buffer = bin.as_slice();
     let img = image::load_from_memory_with_format(img_buffer, format).unwrap();
     let img = img.resize_to_fill(100, 100, Nearest);
 
@@ -46,18 +41,9 @@ pub fn serialize<'a>(
     };
 
     let mut result = Cursor::new(Vec::new());
-    // let mut binary = OwnedBinary::new(img.into_bytes().len()).unwrap();
-
-    // match Binary::from_term(img.into_bytes().encode(env)) {
-    //     Ok(bin) => Ok((atoms::ok(), (meta, bin))),
-    //     Err(err) => Err(err),
-    // }
 
     match img.write_to(&mut result, format) {
-        Ok(_) => {
-
-            Ok((atoms::ok(), (meta, result.get_ref().to_owned())))
-        }
+        Ok(_) => Ok((atoms::ok(), (meta, result.get_ref().to_owned()))),
         Err(_) => Err(Error::BadArg),
     }
 }

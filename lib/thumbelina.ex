@@ -3,14 +3,12 @@ defmodule Thumbelina do
     Library public api
   """
 
-  @path "./archive/images/images/abra.png"
-
   alias Thumbelina.Image
 
   @doc """
     Open an image file for processing
   """
-  def open(path \\ @path) do
+  def open(path) do
     ext = Path.extname(path)
 
     # OPTIMISE: maybe read image resource via rust nif
@@ -19,12 +17,6 @@ defmodule Thumbelina do
       {:ok, binary} -> Image.new(ext, path, binary)
       error -> error
     end
-  end
-
-  def test do
-    {:ok, {_, b}} =  open()
-
-    File.write!("./test.png",b)
   end
 
   @doc """
