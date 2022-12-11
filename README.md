@@ -21,8 +21,6 @@ Huge thanks to the maintainers of [image](https://github.com/kipcole9/image), th
 - pause/resume processing.
 - lazy and efficient for I/0 or CPU bound tasks.
 
-test data set used: <https://www.kaggle.com/datasets/vishalsubbiah/pokemon-images-and-types>
-
 ## Alternatives
 
 If running in production, consider an external service like [aws lambda](https://docs.aws.amazon.com/lambda/latest/dg/with-s3-tutorial.html) or:
