@@ -25,5 +25,4 @@ defmodule Thumbelina.Pipeline do
   def save() do
     nil
   end
-
 end
