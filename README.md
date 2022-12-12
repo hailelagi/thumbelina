@@ -18,8 +18,6 @@ Huge thanks to the maintainers of [image](https://github.com/kipcole9/image), th
 
 - simple api for image manipulation
 - can process really large image data sets concurrently in batches.
-- pause/resume processing.
-- lazy and efficient for I/0 or CPU bound tasks.
 
 ## Alternatives
 
