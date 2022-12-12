@@ -5,6 +5,7 @@ defmodule Thumbelina.Application do
 
   @impl true
   def start(_type, _args) do
+    # todo: investigate passing back pressure configuration
     children = [
       {Thumbelina.Broadway, []}
     ]
