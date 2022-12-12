@@ -12,18 +12,13 @@ concurrency features of the BEAM and the raw processing efficiency and memory sa
 
 3. The erlang vm isn't [bad at all number crunching](https://groups.google.com/g/erlang-programming/c/zsJRI_XzYPE), there's nuanced [fine print](https://www.erlang.org/doc/efficiency_guide/myths.html)
 
-## goals/features
-
-Huge thanks to the maintainers of [image](https://github.com/kipcole9/image), thumbelina adopts a sub-set of its api design.
-
-- simple api for image manipulation
-- can process really large image data sets concurrently in batches.
 
 ## Alternatives
-
+Thanks to the maintainers of [image](https://github.com/kipcole9/image), thumbelina adopts a sub-set of its api design.
 If running in production, consider an external service like [aws lambda](https://docs.aws.amazon.com/lambda/latest/dg/with-s3-tutorial.html) or:
 
 - [sharp](https://sharp.pixelplumbing.com/)
+- [image](https://github.com/kipcole9/image)
 - [imaginary](https://github.com/h2non/imaginary)
 - [imageflow](https://github.com/imazen/imageflow) (with the elixir binding)
 - [vix](https://github.com/akash-akya/vix)
