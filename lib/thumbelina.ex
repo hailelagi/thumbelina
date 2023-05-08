@@ -19,6 +19,10 @@ defmodule Thumbelina do
     end
   end
 
+    def resize(%Image{}) do
+
+  end
+
   @doc """
     Open all the images in fire directory
   """
@@ -29,27 +33,23 @@ defmodule Thumbelina do
     Enum.map(files, fn file -> File.stream!(file, [], bytes) end)
   end
 
-  def write() do
-    nil
-  end
+  # def write() do
+  #   nil
+  # end
 
-  def write_stream() do
-    nil
-  end
+  # def write_stream() do
+  #   nil
+  # end
 
-  def write_file() do
-    nil
-  end
+  # def write_file() do
+  #   nil
+  # end
 
-  def stream() do
-    nil
-  end
+  # def stream() do
+  #   nil
+  # end
 
   def flip() do
-    nil
-  end
-
-  def resize do
     nil
   end
 

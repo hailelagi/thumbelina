@@ -7,5 +7,7 @@ defmodule Thumbelina.Internal do
   use Rustler, otp_app: :thumbelina, crate: "thumbelina"
   def serialize(_, _, _), do: error()
 
+  def serialize_dirty(), do: error()
+
   defp error, do: :erlang.nif_error("not implemented")
 end

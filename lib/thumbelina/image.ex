@@ -9,7 +9,7 @@ defmodule Thumbelina.Image do
           path: String.t(),
           height: non_neg_integer(),
           width: non_neg_integer(),
-          bytes: [byte()]
+          bytes: [byte()],
         }
 
   defstruct [:extension, :path, :height, :width, bytes: []]
@@ -22,9 +22,9 @@ defmodule Thumbelina.Image do
     end
   end
 
-  # def resize(%__MODULE__{} = image, width, height) do
-  #   Internal.resize(image.bytes, width, height)
-  # end
+  def resize(%__MODULE__{} = image, width, height) do
+    Internal.resize(image, width, height)
+  end
 
   defp valid_extension?(e), do: Enum.member?([".png", ".jpg", ".jpeg"], e)
 end
