@@ -2,8 +2,8 @@ defmodule Thumbelina do
   @moduledoc """
     Library public api
   """
-
   alias Thumbelina.Image
+  alias Thumbelina.Internal
 
   @doc """
     Open an image file for processing
@@ -48,6 +48,14 @@ defmodule Thumbelina do
   # def stream() do
   #   nil
   # end
+
+  def resize(%Image{} = image, width, height) do
+    Internal.resize(image, width, height)
+  end
+
+  def resize_all([%Image{}] = images, width, height) do
+    Internal.resize_all(images, width, height)
+  end
 
   def flip() do
     nil

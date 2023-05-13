@@ -1,10 +1,9 @@
 use image::{imageops::FilterType::Nearest, ImageFormat};
 use rustler::{Atom, Binary, Error, NifResult, NifStruct};
+use rayon::prelude::*;
 use std::io::Cursor;
 
-mod atoms {
-    rustler::atoms! {ok, error, png, jpeg, svg}
-}
+mod atoms { rustler::atoms! {ok, error, png, jpeg, svg} }
 
 #[derive(NifStruct)]
 #[module = "Thumbelina.Image"]
@@ -16,12 +15,12 @@ pub struct ImageMetadata {
 }
 
 #[rustler::nif]
-pub fn serialize<'a>(
+pub fn resize<'a>(
     extension: &'a str,
     path: String,
     bin: Binary<'a>,
-    width: i32,
-    height: i32
+    width: u32,
+    height: u32
 ) -> NifResult<(Atom, (ImageMetadata, Vec<u8>))> {
     let format = match extension {
         ".png" => ImageFormat::Png,
@@ -51,34 +50,102 @@ pub fn serialize<'a>(
     }
 }
 
-#[rustler::nif(schedule = "DirtyCpu")]
-pub fn serialize_dirty<'a, 's>(
-    env: Env<'a>,
-    extension: &'a str,
-    path: String,
-    bin: Binary<'a>,
-) -> NifResult<(Atom, (ImageMetadata))> {
+#[rustler::nif]
+pub fn resize_all<'a>(
+    images: Vec<ImageMetadata>,
+    width: u32,
+    height: u32
+) -> NifResult<(Atom, (ImageMetadata, Vec<u8>))> {
+    let images: Vec<_> = images
+        .par_iter()
+        .map(|image| {
+            resize(image.path,300, 500)
+        })
+        .filter_map(|x| x.err())
+        .collect();
 
-    match image::load_from_memory(bin.as_slice()) {
-        Ok(image) => {
-            let image = ImageMetadata {
-                extension: opts.extension,
-                path: opts.path,
-                height: image.height(),
-                width: image.width(),
-                bytes: bin,
-                size: bin.len(),
-            };
-
-            return Ok((image));
-        }
-
-        Err(_) => Err(Error::BadArg),
     }
 }
+
+
+fn make_image() -> Result<()> {
+    let img_buffer = bin.as_slice();
+    let img = image::load_from_memory_with_format(img_buffer, format).unwrap();
+    let img = img.resize_to_fill(width, height, Nearest);
+
+    let mut result = Cursor::new(Vec::new());
+
+    match img.write_to(&mut result, format) {
+        Ok(_) => Ok((atoms::ok(), (meta, result.get_ref().to_owned()))),
+        Err(_) => Err(Error::BadArg),
+
+}
+
+// #[rustler::nif(schedule = "DirtyCpu")]
+// pub fn serialize_dirty<'a, 's>(
+//     env: Env<'a>,
+//     extension: &'a str,
+//     path: String,
+//     bin: Binary<'a>,
+// ) -> NifResult<(Atom, (ImageMetadata))> {
+
+//     match image::load_from_memory(bin.as_slice()) {
+//         Ok(image) => {
+//             let image = ImageMetadata {
+//                 extension: opts.extension,
+//                 path: opts.path,
+//                 height: image.height(),
+//                 width: image.width(),
+//                 bytes: bin,
+//                 size: bin.len(),
+//             };
+
+//             return Ok((image));
+//         }
+
+//         Err(_) => Err(Error::BadArg),
+//     }
+// }
 
 /*
 impl From<ImageError> for Error {
 
 }
 */
+
+
+// #[rustler::nif]
+// pub fn serialize<'a>(
+//     extension: &'a str,
+//     path: String,
+//     bin: Binary<'a>,
+//     width: i32,
+//     height: i32
+// ) -> NifResult<(Atom, (ImageMetadata, Vec<u8>))> {
+//     let format = match extension {
+//         ".png" => ImageFormat::Png,
+//         ".jpg" | ".jpeg" => ImageFormat::Jpeg,
+//         ".webp" => ImageFormat::WebP,
+//         ".gif" => ImageFormat::Gif,
+//         // todo: non-exhaustive
+//         _ => ImageFormat::Png,
+//     };
+
+//     let img_buffer = bin.as_slice();
+//     let img = image::load_from_memory_with_format(img_buffer, format).unwrap();
+//     let img = img.resize_to_fill(width, height, Nearest);
+
+//     let meta = ImageMetadata {
+//         extension: String::from(extension),
+//         path,
+//         height: img.height(),
+//         width: img.width(),
+//     };
+
+//     let mut result = Cursor::new(Vec::new());
+
+//     match img.write_to(&mut result, format) {
+//         Ok(_) => Ok((atoms::ok(), (meta, result.get_ref().to_owned()))),
+//         Err(_) => Err(Error::BadArg),
+//     }
+// }

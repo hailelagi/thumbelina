@@ -5,9 +5,38 @@ defmodule Thumbelina.Internal do
   """
 
   use Rustler, otp_app: :thumbelina, crate: "thumbelina"
-  def serialize(_, _, _), do: error()
+  # FFI Initialisation, scheduling and encoding
 
-  def serialize_dirty(), do: error()
+  @doc """
+    Serialise %Image{} operations as blocking and CPU bound.
+    This would be appropriate for batched image files above a
+    certain MiB threshold.
+  """
+  def serialize_dirty(_, _, _), do: error()
 
-  defp error, do: :erlang.nif_error("not implemented")
+  @doc """
+    Serialise %Image{} in a Threaded NIF that sends a message back to a
+    GenServer caller process.
+  """
+  def server(_), do: error()
+  def resize(_, _, _), do: error()
+  def resize_all(_, _, _), do: error()
+
+  # Image Processing Functions
+  # def blur(_), do: error()
+  # def brighten(_), do: error()
+  # def huerotate(_), do: error()
+  # def contrast(_), do: error()
+  # def crop(_), do: error()
+  # def filter_3x3(_), do: error()
+  # def flip_horizontal(_), do: error()
+  # def flip_vertical(_), do: error()
+  # def greyscale(_), do: error()
+  # def invert(_), do: error()
+  # def rotate180(_), do: error()
+  # def rotate270(_), do: error()
+  # def rotate90(_), do: error()
+  # def unsharpen(_), do: error()
+
+  defp error, do: :erlang.nif_error("image-rs is not available")
 end
