@@ -32,31 +32,31 @@ defmodule ThumbelinaTest do
   end
 
   test "it resizes an example image", %{image: image} do
-    assert {:ok, {img, resized_binary}} = Thumbelina.resize(image, 50, 50)
+    assert {:ok, resized} = Thumbelina.resize(image, 50, 50)
 
-    assert img.height == 50
-    assert img.width == 50
-    refute image.bytes == resized_binary
+    assert resized.height == 50
+    assert resized.width == 50
+    refute image.bytes == resized.bytes
   end
 
   test "it flips an example image", %{image: image} do
-    assert {:ok, {_img, vertical_binary}} = Thumbelina.flip(image, :vertical)
-    assert {:ok, {_img, horizontal_binary}} = Thumbelina.flip(image, :vertical)
+    assert {:ok, vertical} = Thumbelina.flip(image, :vertical)
+    assert {:ok,  horizontal} = Thumbelina.flip(image, :vertical)
 
-    refute image.bytes == vertical_binary
-    refute image.bytes == horizontal_binary
-    assert vertical_binary == horizontal_binary
+    refute image.bytes == vertical.bytes
+    refute image.bytes == horizontal.bytes
+    assert vertical.bytes == horizontal.bytes
   end
 
   test "it rotates an example image", %{image: image} do
-    assert {:ok, {_img, binary_90}} = Thumbelina.rotate(image, 90)
-    assert {:ok, {_img, binary_180}} = Thumbelina.rotate(image, 180)
-    assert {:ok, {_img, binary_270}} = Thumbelina.rotate(image, 270)
-    assert {:ok, {_img, by_pixel_binary}} = Thumbelina.rotate(image, 69.420)
+    assert {:ok, binary_90} = Thumbelina.rotate(image, 90)
+    assert {:ok, binary_180} = Thumbelina.rotate(image, 180)
+    assert {:ok, binary_270} = Thumbelina.rotate(image, 270)
+    assert {:ok, by_pixel_binary} = Thumbelina.rotate(image, 69.420)
 
-    refute image.bytes == binary_90
-    refute image.bytes == binary_180
-    refute image.bytes == binary_270
-    refute image.bytes == by_pixel_binary
+    refute image.bytes == binary_90.bytes
+    refute image.bytes == binary_180.bytes
+    refute image.bytes == binary_270.bytes
+    refute image.bytes == by_pixel_binary.bytes
   end
 end

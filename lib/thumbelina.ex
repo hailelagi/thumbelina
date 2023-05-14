@@ -5,6 +5,8 @@ defmodule Thumbelina do
   alias Thumbelina.Image
   alias Thumbelina.Internal
 
+  @type result :: {:ok, {Image.t(), <<_::_*256>>}} | {:error, String.t()}
+
   def open(path) do
     ext = Path.extname(path)
 
@@ -32,20 +34,22 @@ defmodule Thumbelina do
     |> Stream.map(fn file -> Stream.into(file, <<>>) end)
   end
 
-  @spec resize(Image.t(), pos_integer(), pos_integer()) ::
-          {:ok, {Image.t(), <<_::_*256>>}} | {:error, String.t()}
+  @spec resize(Image.t(), pos_integer(), pos_integer()) :: result()
   def resize(%Image{} = image, width, height) do
     Internal.resize(image.extension, image.bytes, width, height)
   end
 
-  @spec thumbnail(Image.t(), pos_integer()) ::
-          {:ok, {Image.t(), <<_::_*256>>}} | {:error, String.t()}
+  @spec crop(Image.t(), pos_integer(), pos_integer()) :: result()
+  def crop(%Image{} = image, width, height) do
+    Internal.crop(image.extension, image.bytes, width, height)
+  end
+
+  @spec thumbnail(Image.t(), pos_integer()) :: result()
   def thumbnail(%Image{} = image, dimension) do
     Internal.resize(image.extension, image.bytes, dimension, dimension)
   end
 
-  @spec flip(Image.t(), :vertical | :horizontal) ::
-          {:ok, {Image.t(), <<_::_*256>>}} | {:error, String.t()}
+  @spec flip(Image.t(), :vertical | :horizontal) :: result()
   def flip(%Image{} = image, direction) do
     case direction do
       :vertical -> Internal.flip_vertical(image.extension, image.bytes)
@@ -54,6 +58,7 @@ defmodule Thumbelina do
     end
   end
 
+  @spec rotate(Thumbelina.Image.t(), pos_integer()) :: result()
   def rotate(%Image{} = image, angle) when angle > 0 and angle <= 360 do
     case angle do
       angle when angle in [90, 180, 270] ->
@@ -66,10 +71,6 @@ defmodule Thumbelina do
   end
 
   def rotate(%Image{}, _), do: {:error, "invalid rotation angle. Must be in range 1..360"}
-
-  def crop() do
-    nil
-  end
 
   def blur do
     nil

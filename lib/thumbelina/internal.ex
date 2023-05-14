@@ -27,11 +27,13 @@ defmodule Thumbelina.Internal do
   def flip_horizontal(_, _), do: error()
   def flip_vertical(_, _), do: error()
   def rotate(_, _, _), do: error()
+  def crop(_, _, _, _), do: error()
+
   # def blur(_), do: error()
   # def brighten(_), do: error()
 
   # def contrast(_), do: error()
-  # def crop(_), do: error()
+
   # def filter_3x3(_), do: error()
 
   # def greyscale(_), do: error()

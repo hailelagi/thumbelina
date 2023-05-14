@@ -2,11 +2,7 @@ use rustler::{Atom, Binary, Error, NifResult};
 //use rayon::prelude::*;
 use crate::image::{Direction, Image};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageFormat};
-use io::Cursor;
-use std::io;
 
-
-// TOOD refactor into a build_image()
 mod atoms {
     rustler::atoms! {ok, error, png, jpeg, svg}
 }
@@ -17,18 +13,10 @@ pub fn resize<'a>(
     bin: Binary<'a>,
     width: u32,
     height: u32,
-) -> NifResult<(Atom, (Image, Vec<u8>))> {
+) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match try_resize(extension, buffer, width, height) {
-        Ok((image, format)) => {
-            let mut result = Cursor::new(Vec::new());
-            let thumbelina_image = Image::new(extension, &image);
-
-            match image.write_to(&mut result, format) {
-                Ok(_) => Ok((atoms::ok(), (thumbelina_image, result.get_ref().to_owned()))),
-                Err(_) => Err(Error::BadArg),
-            }
-        }
+        Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
 }
@@ -37,18 +25,10 @@ pub fn resize<'a>(
 pub fn flip_horizontal<'a>(
     extension: &'a str,
     bin: Binary<'a>,
-) -> NifResult<(Atom, (Image, Vec<u8>))> {
+) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match try_flip(extension, buffer, Direction::Horizontal) {
-        Ok((image, format)) => {
-            let mut result = Cursor::new(Vec::new());
-            let thumbelina_image = Image::new(extension, &image);
-
-            match image.write_to(&mut result, format) {
-                Ok(_) => Ok((atoms::ok(), (thumbelina_image, result.get_ref().to_owned()))),
-                Err(_) => Err(Error::BadArg),
-            }
-        }
+        Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
 }
@@ -57,18 +37,10 @@ pub fn flip_horizontal<'a>(
 pub fn flip_vertical<'a>(
     extension: &'a str,
     bin: Binary<'a>,
-) -> NifResult<(Atom, (Image, Vec<u8>))> {
+) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match try_flip(extension, buffer, Direction::Vertical) {
-        Ok((image, format)) => {
-            let mut result = Cursor::new(Vec::new());
-            let thumbelina_image = Image::new(extension, &image);
-
-            match image.write_to(&mut result, format) {
-                Ok(_) => Ok((atoms::ok(), (thumbelina_image, result.get_ref().to_owned()))),
-                Err(_) => Err(Error::BadArg),
-            }
-        }
+        Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
 }
@@ -77,19 +49,11 @@ pub fn flip_vertical<'a>(
 pub fn rotate<'a>(
     extension: &'a str,
     bin: Binary<'a>,
-    angle: i32
-) -> NifResult<(Atom, (Image, Vec<u8>))> {
+    angle: i32,
+) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match try_rotate(extension, buffer, angle) {
-        Ok((image, format)) => {
-            let mut result = Cursor::new(Vec::new());
-            let thumbelina_image = Image::new(extension, &image);
-
-            match image.write_to(&mut result, format) {
-                Ok(_) => Ok((atoms::ok(), (thumbelina_image, result.get_ref().to_owned()))),
-                Err(_) => Err(Error::BadArg),
-            }
-        }
+        Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
 }
