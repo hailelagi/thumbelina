@@ -54,9 +54,18 @@ defmodule Thumbelina do
     end
   end
 
-  def rotate(%Image{} = image, angle) do
-    Internal.rotate(image.extension, image.bytes, angle)
+  def rotate(%Image{} = image, angle) when angle > 0 and angle <= 360 do
+    case angle do
+      angle when angle in [90, 180, 270] ->
+        Internal.rotate(image.extension, image.bytes, angle)
+
+      angle when is_float(angle) ->
+        {angle, _} = Integer.parse("#{angle}")
+        Internal.rotate(image.extension, image.bytes, angle)
+    end
   end
+
+  def rotate(%Image{}, _), do: {:error, "invalid rotation angle. Must be in range 1..360"}
 
   def crop() do
     nil

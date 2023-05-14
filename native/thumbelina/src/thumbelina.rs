@@ -1,49 +1,14 @@
-use rustler::{Atom, Binary, Error, NifResult, NifStruct};
+use rustler::{Atom, Binary, Error, NifResult};
 //use rayon::prelude::*;
+use crate::image::{Direction, Image};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageFormat};
 use io::Cursor;
 use std::io;
 
+
+// TOOD refactor into a build_image()
 mod atoms {
     rustler::atoms! {ok, error, png, jpeg, svg}
-}
-
-#[derive(NifStruct)]
-#[module = "Thumbelina.Image"]
-pub struct Image {
-    pub extension: String,
-    pub height: u32,
-    pub width: u32,
-}
-
-impl<'a> Image {
-    fn new(extension: &'a str, image: &DynamicImage) -> Self {
-        return Image {
-            extension: String::from(extension),
-            height: image.height(),
-            width: image.width(),
-        };
-    }
-}
-
-// pub struct ImageMetadata {
-//     path: String,
-//     source: Source,
-//     // fn write to dest
-
-//     // fn modify_inplace(extension, path, source, height, width) -> Self {
-//     //     thumbelina::Image{e}
-//     // }
-// }
-
-// enum Source {
-//     Disk,
-//     InMemory,
-// }
-
-enum Direction {
-    Horizontal,
-    Vertical,
 }
 
 #[rustler::nif]
@@ -108,6 +73,27 @@ pub fn flip_vertical<'a>(
     }
 }
 
+#[rustler::nif]
+pub fn rotate<'a>(
+    extension: &'a str,
+    bin: Binary<'a>,
+    angle: i32
+) -> NifResult<(Atom, (Image, Vec<u8>))> {
+    let buffer = bin.as_slice();
+    match try_rotate(extension, buffer, angle) {
+        Ok((image, format)) => {
+            let mut result = Cursor::new(Vec::new());
+            let thumbelina_image = Image::new(extension, &image);
+
+            match image.write_to(&mut result, format) {
+                Ok(_) => Ok((atoms::ok(), (thumbelina_image, result.get_ref().to_owned()))),
+                Err(_) => Err(Error::BadArg),
+            }
+        }
+        Err(err) => Err(Error::Term(Box::new(err.to_string()))),
+    }
+}
+
 fn try_resize<'a>(
     extension: &'a str,
     buffer: &'a [u8],
@@ -136,7 +122,27 @@ fn try_flip<'a>(
     let img = image::load_from_memory_with_format(buffer, format)?;
     let img = match direction {
         Direction::Vertical => img.flipv(),
-        Direction::Horizontal => img.fliph()
+        Direction::Horizontal => img.fliph(),
+    };
+
+    Ok((img, format))
+}
+
+fn try_rotate<'a>(
+    extension: &'a str,
+    buffer: &'a [u8],
+    angle: i32,
+) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
+    let format = ImageFormat::from_extension(extension).ok_or(std::io::Error::new(
+        std::io::ErrorKind::Unsupported,
+        "invalid format provided",
+    ))?;
+    let img = image::load_from_memory_with_format(buffer, format)?;
+    let img = match angle {
+        90 => img.rotate90(),
+        180 => img.rotate180(),
+        270 => img.rotate270(),
+        _ => img.huerotate(angle),
     };
 
     Ok((img, format))

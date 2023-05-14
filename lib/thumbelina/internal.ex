@@ -26,19 +26,17 @@ defmodule Thumbelina.Internal do
   def resize(_, _, _, _), do: error()
   def flip_horizontal(_, _), do: error()
   def flip_vertical(_, _), do: error()
-
+  def rotate(_, _, _), do: error()
   # def blur(_), do: error()
   # def brighten(_), do: error()
-  # def huerotate(_), do: error()
+
   # def contrast(_), do: error()
   # def crop(_), do: error()
   # def filter_3x3(_), do: error()
 
   # def greyscale(_), do: error()
   # def invert(_), do: error()
-  # def rotate180(_), do: error()
-  # def rotate270(_), do: error()
-  # def rotate90(_), do: error()
+
   # def unsharpen(_), do: error()
 
   defp error, do: :erlang.nif_error("image-rs is not available")
