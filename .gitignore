@@ -37,3 +37,5 @@ thumbelina-*.tar
 
 # Ignore fleet
 .fleet
+
+.iex.exs

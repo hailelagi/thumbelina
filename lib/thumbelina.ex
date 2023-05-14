@@ -1,13 +1,10 @@
 defmodule Thumbelina do
   @moduledoc """
-    Library public api
+    Image manipulation api.
   """
   alias Thumbelina.Image
   alias Thumbelina.Internal
 
-  @doc """
-    Open an image file for processing
-  """
   def open(path) do
     ext = Path.extname(path)
 
@@ -17,47 +14,45 @@ defmodule Thumbelina do
     end
   end
 
-  @spec open_directory!(String.t()) :: [Image.t()]
-  def open_directory!(path, bytes \\ 2048) do
-    files = File.ls!(path)
-
-    Enum.map(files, fn file -> File.stream!(file, [], bytes) end)
+  def open_all!(path) do
+    path
+    |> File.ls!()
+    |> Stream.map(fn file -> Thumbelina.open(path <> "/" <> file) end)
   end
 
-  # def write() do
-  #   nil
-  # end
+  @doc """
+    If dealing with a large amount of files on disk and you wouldn't like
+    to use `File.open/1` due to the number of open file descriptors and would like control
+    over how many bytes are read into memory at a time. Defaults to 2 ** 16 bytes or ~65kb.
+  """
+  def stream_directory!(path, bytes \\ 65536) do
+    path
+    |> File.ls!()
+    |> Stream.map(fn file -> File.stream!(path <> "/" <> file, [], bytes) end)
+    |> Stream.map(fn file -> Stream.into(file, <<>>) end)
+    |> Enum.to_list()
+  end
 
-  # def write_stream() do
-  #   nil
-  # end
-
-  # def write_file() do
-  #   nil
-  # end
-
-  # def stream() do
-  #   nil
-  # end
-
+  @spec resize(Image.t(), pos_integer(), pos_integer()) ::
+          {:ok, {Image.t(), <<_::_*256>>}} | {:error, String.t()}
   def resize(%Image{} = image, width, height) do
     Internal.resize(image.extension, image.bytes, width, height)
   end
 
-  # def resize_all([%Image{}] = images, width, height) do
-  #   Internal.resize_all(images, width, height)
-  # end
-
-  def flip() do
-    nil
+  @spec thumbnail(Image.t(), pos_integer()) ::
+          {:ok, {Image.t(), <<_::_*256>>}} | {:error, String.t()}
+  def thumbnail(%Image{} = image, dimension) do
+    Internal.resize(image.extension, image.bytes, dimension, dimension)
   end
 
-  def rotate do
-    nil
+  @spec flip(Image.t(), :vertical | :horizontal) ::
+          {:ok, {Image.t(), <<_::_*256>>}} | {:error, String.t()}
+  def flip(%Image{} = image, direction) do
+    Internal.flip(image.extension, image.bytes, direction)
   end
 
-  def avatar do
-    nil
+  def rotate(%Image{} = image, angle) do
+    Internal.rotate(image.extension, image.bytes, angle)
   end
 
   def crop() do

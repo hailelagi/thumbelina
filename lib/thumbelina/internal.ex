@@ -20,7 +20,7 @@ defmodule Thumbelina.Internal do
   """
   def server(_), do: error()
   def resize(_, _, _, _), do: error()
-  def resize_all(_, _, _, _), do: error()
+  def resize_all(_, _, _), do: error()
 
   # Image Processing Functions
   # def blur(_), do: error()
