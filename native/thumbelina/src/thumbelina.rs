@@ -41,6 +41,11 @@ impl<'a> Image {
 //     InMemory,
 // }
 
+enum Direction {
+    Horizontal,
+    Vertical,
+}
+
 #[rustler::nif]
 pub fn resize<'a>(
     extension: &'a str,
@@ -50,6 +55,46 @@ pub fn resize<'a>(
 ) -> NifResult<(Atom, (Image, Vec<u8>))> {
     let buffer = bin.as_slice();
     match try_resize(extension, buffer, width, height) {
+        Ok((image, format)) => {
+            let mut result = Cursor::new(Vec::new());
+            let thumbelina_image = Image::new(extension, &image);
+
+            match image.write_to(&mut result, format) {
+                Ok(_) => Ok((atoms::ok(), (thumbelina_image, result.get_ref().to_owned()))),
+                Err(_) => Err(Error::BadArg),
+            }
+        }
+        Err(err) => Err(Error::Term(Box::new(err.to_string()))),
+    }
+}
+
+#[rustler::nif]
+pub fn flip_horizontal<'a>(
+    extension: &'a str,
+    bin: Binary<'a>,
+) -> NifResult<(Atom, (Image, Vec<u8>))> {
+    let buffer = bin.as_slice();
+    match try_flip(extension, buffer, Direction::Horizontal) {
+        Ok((image, format)) => {
+            let mut result = Cursor::new(Vec::new());
+            let thumbelina_image = Image::new(extension, &image);
+
+            match image.write_to(&mut result, format) {
+                Ok(_) => Ok((atoms::ok(), (thumbelina_image, result.get_ref().to_owned()))),
+                Err(_) => Err(Error::BadArg),
+            }
+        }
+        Err(err) => Err(Error::Term(Box::new(err.to_string()))),
+    }
+}
+
+#[rustler::nif]
+pub fn flip_vertical<'a>(
+    extension: &'a str,
+    bin: Binary<'a>,
+) -> NifResult<(Atom, (Image, Vec<u8>))> {
+    let buffer = bin.as_slice();
+    match try_flip(extension, buffer, Direction::Vertical) {
         Ok((image, format)) => {
             let mut result = Cursor::new(Vec::new());
             let thumbelina_image = Image::new(extension, &image);
@@ -79,6 +124,24 @@ fn try_resize<'a>(
     Ok((img, format))
 }
 
+fn try_flip<'a>(
+    extension: &'a str,
+    buffer: &'a [u8],
+    direction: Direction,
+) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
+    let format = ImageFormat::from_extension(extension).ok_or(std::io::Error::new(
+        std::io::ErrorKind::Unsupported,
+        "invalid format provided",
+    ))?;
+    let img = image::load_from_memory_with_format(buffer, format)?;
+    let img = match direction {
+        Direction::Vertical => img.flipv(),
+        Direction::Horizontal => img.fliph()
+    };
+
+    Ok((img, format))
+}
+
 // #[rustler::nif]
 // pub fn resize_all<'a>(
 //     images: Vec<thumbelina::Image>,
@@ -90,20 +153,6 @@ fn try_resize<'a>(
 //         .map(|image| alter_image(image.path, 300, 500))
 //         .filter_map(|x| x.err())
 //         .collect();
-// }
-
-// fn alter_dimensions(img: &mut DynamicImage, format: ImageFormat) -> Result<()> {
-//     let img_buffer = bin.as_slice();
-
-//     let img = image::load_from_memory_with_format(img_buffer, format).unwrap();
-//     let img = img.resize_to_fill(width, height, Nearest);
-
-//     let mut result = Cursor::new(Vec::new());
-
-//     match img.write_to(&mut result, format) {
-//         Ok(_) => Ok((atoms::ok(), (image, result.get_ref().to_owned()))),
-//         Err(_) => Err(Error::BadArg),
-//     }
 // }
 
 // #[rustler::nif(schedule = "DirtyCpu")]
@@ -128,42 +177,6 @@ fn try_resize<'a>(
 //             return Ok((image));
 //         }
 
-//         Err(_) => Err(Error::BadArg),
-//     }
-// }
-
-// #[rustler::nif]
-// pub fn serialize<'a>(
-//     extension: &'a str,
-//     path: String,
-//     bin: Binary<'a>,
-//     width: i32,
-//     height: i32
-// ) -> NifResult<(Atom, (thumbelina::Image, Vec<u8>))> {
-//     let format = match extension {
-//         ".png" => ImageFormat::Png,
-//         ".jpg" | ".jpeg" => ImageFormat::Jpeg,
-//         ".webp" => ImageFormat::WebP,
-//         ".gif" => ImageFormat::Gif,
-//         // todo: non-exhaustive
-//         _ => ImageFormat::Png,
-//     };
-
-//     let img_buffer = bin.as_slice();
-//     let img = image::load_from_memory_with_format(img_buffer, format).unwrap();
-//     let img = img.resize_to_fill(width, height, Nearest);
-
-//     let image = thumbelina::Image {
-//         extension: String::from(extension),
-//         path,
-//         height: img.height(),
-//         width: img.width(),
-//     };
-
-//     let mut result = Cursor::new(Vec::new());
-
-//     match img.write_to(&mut result, format) {
-//         Ok(_) => Ok((atoms::ok(), (image, result.get_ref().to_owned()))),
 //         Err(_) => Err(Error::BadArg),
 //     }
 // }

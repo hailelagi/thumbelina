@@ -19,18 +19,21 @@ defmodule Thumbelina.Internal do
     GenServer caller process.
   """
   def server(_), do: error()
-  def resize(_, _, _, _), do: error()
-  def resize_all(_, _, _), do: error()
+
+  # def resize_all(_, _, _), do: error()
 
   # Image Processing Functions
+  def resize(_, _, _, _), do: error()
+  def flip_horizontal(_, _), do: error()
+  def flip_vertical(_, _), do: error()
+
   # def blur(_), do: error()
   # def brighten(_), do: error()
   # def huerotate(_), do: error()
   # def contrast(_), do: error()
   # def crop(_), do: error()
   # def filter_3x3(_), do: error()
-  # def flip_horizontal(_), do: error()
-  # def flip_vertical(_), do: error()
+
   # def greyscale(_), do: error()
   # def invert(_), do: error()
   # def rotate180(_), do: error()

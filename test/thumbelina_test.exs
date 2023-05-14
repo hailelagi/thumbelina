@@ -1,21 +1,17 @@
 defmodule ThumbelinaTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Thumbelina.Image
+
   doctest Thumbelina
 
-  test "it opens and resizes an example image" do
-    # read the image data into a binary
+  test "it reads an image binary into an %Image{}" do
     {:ok, image} = Thumbelina.open("./example/abra.png")
     assert image.height == 0
     assert image.width == 0
-
-    # it resizes the image in-memory
-    assert {:ok, {img, _resized_binary}} = Thumbelina.resize(image, 50, 50)
-    assert img.height == 50
-    assert img.width == 50
+    assert is_binary(image.bytes)
   end
 
-  test "it opens and resizes all the example images lazily" do
+  test "it streams the images in a local directory" do
     entries = Thumbelina.open_all!("./example/pokemon")
 
     assert Enum.all?(entries, fn e ->
@@ -29,5 +25,26 @@ defmodule ThumbelinaTest do
     entries = Thumbelina.stream_directory!("./example/pokemon") |> Enum.map(&Enum.to_list/1)
 
     assert Enum.all?(entries, fn [e] -> is_binary(e) end)
+  end
+
+  test "it resizes an example image" do
+    {:ok, image} = Thumbelina.open("./example/abra.png")
+    assert {:ok, {img, resized_binary}} = Thumbelina.resize(image, 50, 50)
+
+    assert img.height == 50
+    assert img.width == 50
+    refute image.bytes == resized_binary
+  end
+
+  test "it flips an example image" do
+    {:ok, image} = Thumbelina.open("./example/abra.png")
+    assert is_binary(image.bytes)
+
+    assert {:ok, {img, vertical_binary}} = Thumbelina.flip(image, :vertical)
+    assert {:ok, {img, horizontal_binary}} = Thumbelina.flip(image, :vertical)
+
+    refute image.bytes == vertical_binary
+    refute image.bytes == horizontal_binary
+    assert vertical_binary == horizontal_binary
   end
 end

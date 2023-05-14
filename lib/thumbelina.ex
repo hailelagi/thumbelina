@@ -30,7 +30,6 @@ defmodule Thumbelina do
     |> File.ls!()
     |> Stream.map(fn file -> File.stream!(path <> "/" <> file, [], bytes) end)
     |> Stream.map(fn file -> Stream.into(file, <<>>) end)
-    |> Enum.to_list()
   end
 
   @spec resize(Image.t(), pos_integer(), pos_integer()) ::
@@ -48,7 +47,11 @@ defmodule Thumbelina do
   @spec flip(Image.t(), :vertical | :horizontal) ::
           {:ok, {Image.t(), <<_::_*256>>}} | {:error, String.t()}
   def flip(%Image{} = image, direction) do
-    Internal.flip(image.extension, image.bytes, direction)
+    case direction do
+      :vertical -> Internal.flip_vertical(image.extension, image.bytes)
+      :horizontal -> Internal.flip_horizontal(image.extension, image.bytes)
+      _ -> {:error, "Invalid direction for flip"}
+    end
   end
 
   def rotate(%Image{} = image, angle) do

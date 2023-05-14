@@ -19,8 +19,8 @@ rustler::init!(
         //   thumbelina::contrast
         //   thumbelina::crop,
         //   thumbelina::filter_3x3,
-        //   thumbelina::flip_horizontal,
-        //   thumbelina::flip_vertical,
+        thumbelina::flip_horizontal,
+        thumbelina::flip_vertical,
         //   thumbelina::greyscale,
         //   thumbelina::invert,
         thumbelina::resize,
