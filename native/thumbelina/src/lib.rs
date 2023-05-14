@@ -3,7 +3,7 @@ mod thumbelina;
 use rustler::{Env, Term};
 
 fn load(env: Env, _: Term) -> bool {
-    rustler::resource!(thumbelina::ImageMetadata, env);
+    rustler::resource!(thumbelina::Image, env);
     true
 }
 
@@ -24,7 +24,7 @@ rustler::init!(
         //   thumbelina::greyscale,
         //   thumbelina::invert,
         thumbelina::resize,
-        thumbelina::resize_all,
+        // thumbelina::resize_all,
         //   thumbelina::rotate180,
         //   thumbelina::rotate270,
         //   thumbelina::rotate90,

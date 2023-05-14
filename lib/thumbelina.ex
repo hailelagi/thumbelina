@@ -11,21 +11,12 @@ defmodule Thumbelina do
   def open(path) do
     ext = Path.extname(path)
 
-    # OPTIMISE: maybe read image resource via rust nif
-    # TODO: research is it faster to hold file locks in rust?
     case File.read(path) do
-      {:ok, binary} -> Image.new(ext, path, binary)
+      {:ok, binary} -> {:ok, Image.new(ext, path, binary, :disk)}
       error -> error
     end
   end
 
-    def resize(%Image{}) do
-
-  end
-
-  @doc """
-    Open all the images in fire directory
-  """
   @spec open_directory!(String.t()) :: [Image.t()]
   def open_directory!(path, bytes \\ 2048) do
     files = File.ls!(path)
@@ -50,12 +41,12 @@ defmodule Thumbelina do
   # end
 
   def resize(%Image{} = image, width, height) do
-    Internal.resize(image, width, height)
+    Internal.resize(image.extension, image.bytes, width, height)
   end
 
-  def resize_all([%Image{}] = images, width, height) do
-    Internal.resize_all(images, width, height)
-  end
+  # def resize_all([%Image{}] = images, width, height) do
+  #   Internal.resize_all(images, width, height)
+  # end
 
   def flip() do
     nil

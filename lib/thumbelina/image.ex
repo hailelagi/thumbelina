@@ -10,17 +10,29 @@ defmodule Thumbelina.Image do
           height: non_neg_integer() | 0,
           width: non_neg_integer() | 0,
           bytes: [byte()],
+          source: :disk | :in_memory
         }
 
-  defstruct [:extension, :path, bytes: <<0::255>>, height: 0, width: 0]
+  defstruct [:extension, :path, :source, bytes: <<0::255>>, height: 0, width: 0]
 
-  def new(ext, path, bytes) do
-    if valid_extension?(ext) do
-      %Image{extension: ext, path: path, bytes: bytes}
+  def new(ext, path, bytes, src) do
+    if supported_extension?(ext) do
+      ext = String.replace_prefix(ext, ".", "")
+
+      case src do
+        :disk ->
+          %Image{extension: ext, path: path, bytes: bytes, source: :disk}
+
+        :in_memory ->
+          %Image{extension: ext, path: "./thumbelina/temp/", bytes: bytes, source: :in_memory}
+
+        _ ->
+          {:error, "invalid image binary source."}
+      end
     else
       {:error, "invalid image format"}
     end
   end
 
-  defp valid_extension?(e), do: Enum.member?([".png", ".jpg", ".jpeg"], e)
+  defp supported_extension?(e), do: Enum.member?([".png", ".jpg", ".jpeg"], e)
 end
