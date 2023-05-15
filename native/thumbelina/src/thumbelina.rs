@@ -9,6 +9,33 @@ mod atoms {
     rustler::atoms! {ok, error, png, jpeg, svg}
 }
 
+// TODO: Serialise any known image operation on dirty CPU
+// #[rustler::nif(schedule = "DirtyCpu")]
+// pub fn serialize_dirty<'a, 's>(
+//     env: Env<'a>,
+//     extension: &'a str,
+//     path: String,
+//     bin: Binary<'a>,
+// ) -> NifResult<(Atom, (thumbelina::Image))> {
+
+// }
+
+
+// TODO: Create api to parallelise NIF operations when recieve image sets
+// #[rustler::nif]
+// pub fn resize_all<'a>(
+//     images: Vec<Image>,
+//     width: u32,
+//     height: u32,
+// ) -> NifResult<(Atom, Vec<Image>)> {
+//     let images: Vec<_> = images
+//         .par_iter()
+//         .map(|image| alter_image(image.path, 300, 500))
+//         .filter_map(|x| x.err())
+//         .collect();
+// }
+
+
 #[rustler::nif]
 pub fn resize<'a>(
     extension: &'a str,
@@ -190,42 +217,3 @@ fn try_greyscale<'a>(
 
     Ok((img, format))
 }
-
-// #[rustler::nif]
-// pub fn resize_all<'a>(
-//     images: Vec<thumbelina::Image>,
-//     width: u32,
-//     height: u32,
-// ) -> NifResult<(Atom, (thumbelina::Image, Vec<u8>))> {
-//     let images: Vec<_> = images
-//         .par_iter()
-//         .map(|image| alter_image(image.path, 300, 500))
-//         .filter_map(|x| x.err())
-//         .collect();
-// }
-
-// #[rustler::nif(schedule = "DirtyCpu")]
-// pub fn serialize_dirty<'a, 's>(
-//     env: Env<'a>,
-//     extension: &'a str,
-//     path: String,
-//     bin: Binary<'a>,
-// ) -> NifResult<(Atom, (thumbelina::Image))> {
-
-//     match image::load_from_memory(bin.as_slice()) {
-//         Ok(image) => {
-//             let image = thumbelina::Image {
-//                 extension: opts.extension,
-//                 path: opts.path,
-//                 height: image.height(),
-//                 width: image.width(),
-//                 bytes: bin,
-//                 size: bin.len(),
-//             };
-
-//             return Ok((image));
-//         }
-
-//         Err(_) => Err(Error::BadArg),
-//     }
-// }

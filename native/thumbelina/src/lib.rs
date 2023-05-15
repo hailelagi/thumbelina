@@ -1,6 +1,7 @@
 use rustler::{Env, Term};
 pub mod image;
 pub mod thumbelina;
+pub mod server;
 
 fn load(env: Env, _: Term) -> bool {
     rustler::resource!(image::Image, env);
