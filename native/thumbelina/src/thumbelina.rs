@@ -24,6 +24,20 @@ pub fn resize<'a>(
 }
 
 #[rustler::nif]
+pub fn thumbnail<'a>(
+    extension: &'a str,
+    bin: Binary<'a>,
+    nwidth: u32,
+    nheight: u32,
+) -> NifResult<(Atom, Image)> {
+    let buffer = bin.as_slice();
+    match try_thumbnail(extension, buffer, nwidth, nheight) {
+        Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
+        Err(err) => Err(Error::Term(Box::new(err.to_string()))),
+    }
+}
+
+#[rustler::nif]
 pub fn flip_horizontal<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match try_flip(extension, buffer, Direction::Horizontal) {
@@ -59,6 +73,24 @@ pub fn blur<'a>(extension: &'a str, bin: Binary<'a>, sigma: f32) -> NifResult<(A
     }
 }
 
+#[rustler::nif]
+pub fn brighten<'a>(extension: &'a str, bin: Binary<'a>, brightness: i32) -> NifResult<(Atom, Image)> {
+    let buffer = bin.as_slice();
+    match try_brighten(extension, buffer, brightness) {
+        Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
+        Err(err) => Err(Error::Term(Box::new(err.to_string()))),
+    }
+}
+
+#[rustler::nif]
+pub fn greyscale<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
+    let buffer = bin.as_slice();
+    match try_greyscale(extension, buffer) {
+        Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
+        Err(err) => Err(Error::Term(Box::new(err.to_string()))),
+    }
+}
+
 fn try_resize<'a>(
     extension: &'a str,
     buffer: &'a [u8],
@@ -69,6 +101,20 @@ fn try_resize<'a>(
         .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
     let img = image::load_from_memory_with_format(buffer, format)?;
     let img = img.resize_to_fill(width, height, Nearest);
+
+    Ok((img, format))
+}
+
+fn try_thumbnail<'a>(
+    extension: &'a str,
+    buffer: &'a [u8],
+    nwidth: u32,
+    nheight: u32,
+) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
+    let format = ImageFormat::from_extension(extension)
+        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
+    let img = image::load_from_memory_with_format(buffer, format)?;
+    let img = img.thumbnail(nwidth, nheight);
 
     Ok((img, format))
 }
@@ -116,6 +162,31 @@ fn try_blur<'a>(
         .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
     let img = image::load_from_memory_with_format(buffer, format)?;
     let img = img.blur(sigma);
+
+    Ok((img, format))
+}
+
+fn try_brighten<'a>(
+    extension: &'a str,
+    buffer: &'a [u8],
+    value: i32,
+) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
+    let format = ImageFormat::from_extension(extension)
+        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
+    let img = image::load_from_memory_with_format(buffer, format)?;
+    let img = img.brighten(value);
+
+    Ok((img, format))
+}
+
+fn try_greyscale<'a>(
+    extension: &'a str,
+    buffer: &'a [u8],
+) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
+    let format = ImageFormat::from_extension(extension)
+        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
+    let img = image::load_from_memory_with_format(buffer, format)?;
+    let img = img.grayscale();
 
     Ok((img, format))
 }

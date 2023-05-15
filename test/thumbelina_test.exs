@@ -39,6 +39,14 @@ defmodule ThumbelinaTest do
     refute image.bytes == resized.bytes
   end
 
+  test "it makes a thumbnail!", %{image: image} do
+    assert {:ok, thumbnail} = Thumbelina.thumbnail(image, 50, 50)
+
+    assert thumbnail.height == 50
+    assert thumbnail.width == 50
+    refute image.bytes == thumbnail.bytes
+  end
+
   test "it flips an example image", %{image: image} do
     assert {:ok, vertical} = Thumbelina.flip(image, :vertical)
     assert {:ok, horizontal} = Thumbelina.flip(image, :vertical)
@@ -64,5 +72,17 @@ defmodule ThumbelinaTest do
     assert {:ok, blur} = Thumbelina.blur(image, 69.420)
 
     refute image.bytes == blur.bytes
+  end
+
+  test "it brigtens an image", %{image: image} do
+    assert {:ok, bright} = Thumbelina.brighten(image, 69.420)
+
+    refute image.bytes == bright.bytes
+  end
+
+  test "it blurs an image", %{image: image} do
+    assert {:ok, bright} = Thumbelina.blur(image, 69.420)
+
+    refute image.bytes == bright.bytes
   end
 end

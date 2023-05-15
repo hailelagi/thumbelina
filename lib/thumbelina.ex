@@ -44,9 +44,9 @@ defmodule Thumbelina do
     Internal.crop(image.extension, image.bytes, width, height)
   end
 
-  @spec thumbnail(Image.t(), pos_integer()) :: result()
-  def thumbnail(%Image{} = image, dimension) do
-    Internal.resize(image.extension, image.bytes, dimension, dimension)
+  @spec thumbnail(Image.t(), pos_integer(), pos_integer()) :: result()
+  def thumbnail(%Image{} = image, new_width, new_height) do
+    Internal.thumbnail(image.extension, image.bytes, new_width, new_height)
   end
 
   @spec flip(Image.t(), :vertical | :horizontal) :: result()
@@ -87,11 +87,21 @@ defmodule Thumbelina do
     end
   end
 
-  def brighten do
-    nil
+  @spec brighten(Thumbelina.Image.t(), pos_integer()) :: result()
+  def brighten(%Image{} = image, brightness) do
+    case brightness do
+      brightness when is_float(brightness) ->
+        {brightness, _} = Integer.parse("#{brightness}")
+        Internal.brighten(image.extension, image.bytes, brightness)
+
+      brightness when is_integer(brightness) ->
+        Internal.brighten(image.extension, image.bytes, brightness)
+
+      _ ->
+        {:error, "brightness must be an integer"}
+    end
   end
 
-  def greyscale do
-    nil
-  end
+  @spec greyscale(Thumbelina.Image.t()) :: result()
+  def greyscale(%Image{} = image), do: Internal.greyscale(image.extension, image.bytes)
 end

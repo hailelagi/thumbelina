@@ -13,18 +13,17 @@ rustler::init!(
         //   thumbelina::serialize_dirty,
         //   thumbelina::server,
         thumbelina::blur,
-        //   thumbelina::brighten,
-        //   thumbelina::contrast
-        //   thumbelina::crop,
-        //   thumbelina::filter_3x3,
+        thumbelina::brighten,
         thumbelina::flip_horizontal,
         thumbelina::flip_vertical,
-        //   thumbelina::greyscale,
-        //   thumbelina::invert,
+        thumbelina::greyscale,
         thumbelina::resize,
-        // thumbelina::resize_all,
+        thumbelina::thumbnail,
         thumbelina::rotate,
+        //   thumbelina::invert,
         //   thumbelina::unsharpen
+        //   thumbelina::contrast
+        //   thumbelina::crop,
     ],
     load = load
 );
