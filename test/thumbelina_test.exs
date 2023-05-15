@@ -41,7 +41,7 @@ defmodule ThumbelinaTest do
 
   test "it flips an example image", %{image: image} do
     assert {:ok, vertical} = Thumbelina.flip(image, :vertical)
-    assert {:ok,  horizontal} = Thumbelina.flip(image, :vertical)
+    assert {:ok, horizontal} = Thumbelina.flip(image, :vertical)
 
     refute image.bytes == vertical.bytes
     refute image.bytes == horizontal.bytes
@@ -58,5 +58,11 @@ defmodule ThumbelinaTest do
     refute image.bytes == binary_180.bytes
     refute image.bytes == binary_270.bytes
     refute image.bytes == by_pixel_binary.bytes
+  end
+
+  test "it adds a guassian blur on an image", %{image: image} do
+    assert {:ok, blur} = Thumbelina.blur(image, 69.420)
+
+    refute image.bytes == blur.bytes
   end
 end

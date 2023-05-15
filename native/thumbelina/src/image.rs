@@ -1,6 +1,6 @@
 use image::{DynamicImage, ImageFormat};
 use rustler::{Error, NifStruct};
-use std::{io::Cursor};
+use std::io::Cursor;
 
 #[derive(NifStruct)]
 #[module = "Thumbelina.Image"]
@@ -21,7 +21,11 @@ impl<'a> Image {
         };
     }
 
-    pub fn build(image: DynamicImage, extension: &'a str, format: ImageFormat) -> Result<Image, Error> {
+    pub fn build(
+        image: DynamicImage,
+        extension: &'a str,
+        format: ImageFormat,
+    ) -> Result<Image, Error> {
         let mut result = Cursor::new(Vec::new());
 
         match image.write_to(&mut result, format) {

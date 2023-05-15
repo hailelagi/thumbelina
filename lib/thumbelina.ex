@@ -72,8 +72,19 @@ defmodule Thumbelina do
 
   def rotate(%Image{}, _), do: {:error, "invalid rotation angle. Must be in range 1..360"}
 
-  def blur do
-    nil
+  @spec blur(Thumbelina.Image.t(), float()) :: result()
+  def blur(%Image{} = image, sigma) do
+    case sigma do
+      sigma when is_integer(sigma) ->
+        {sigma, _} = Float.parse("#{sigma}")
+        Internal.blur(image.extension, image.bytes, sigma)
+
+      sigma when is_float(sigma) ->
+        Internal.blur(image.extension, image.bytes, sigma)
+
+      _ ->
+        {:error, "gausian blur must be a float"}
+    end
   end
 
   def brighten do

@@ -10,10 +10,9 @@ fn load(env: Env, _: Term) -> bool {
 rustler::init!(
     "Elixir.Thumbelina.Internal",
     [
-        // thumbelina::serialize,
         //   thumbelina::serialize_dirty,
         //   thumbelina::server,
-        //   thumbelina::blur,
+        thumbelina::blur,
         //   thumbelina::brighten,
         //   thumbelina::contrast
         //   thumbelina::crop,

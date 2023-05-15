@@ -2,6 +2,8 @@ use rustler::{Atom, Binary, Error, NifResult};
 //use rayon::prelude::*;
 use crate::image::{Direction, Image};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageFormat};
+use io::ErrorKind::Unsupported;
+use std::io;
 
 mod atoms {
     rustler::atoms! {ok, error, png, jpeg, svg}
@@ -22,10 +24,7 @@ pub fn resize<'a>(
 }
 
 #[rustler::nif]
-pub fn flip_horizontal<'a>(
-    extension: &'a str,
-    bin: Binary<'a>,
-) -> NifResult<(Atom, Image)> {
+pub fn flip_horizontal<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match try_flip(extension, buffer, Direction::Horizontal) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
@@ -34,10 +33,7 @@ pub fn flip_horizontal<'a>(
 }
 
 #[rustler::nif]
-pub fn flip_vertical<'a>(
-    extension: &'a str,
-    bin: Binary<'a>,
-) -> NifResult<(Atom, Image)> {
+pub fn flip_vertical<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match try_flip(extension, buffer, Direction::Vertical) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
@@ -46,13 +42,18 @@ pub fn flip_vertical<'a>(
 }
 
 #[rustler::nif]
-pub fn rotate<'a>(
-    extension: &'a str,
-    bin: Binary<'a>,
-    angle: i32,
-) -> NifResult<(Atom, Image)> {
+pub fn rotate<'a>(extension: &'a str, bin: Binary<'a>, angle: i32) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match try_rotate(extension, buffer, angle) {
+        Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
+        Err(err) => Err(Error::Term(Box::new(err.to_string()))),
+    }
+}
+
+#[rustler::nif]
+pub fn blur<'a>(extension: &'a str, bin: Binary<'a>, sigma: f32) -> NifResult<(Atom, Image)> {
+    let buffer = bin.as_slice();
+    match try_blur(extension, buffer, sigma) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -64,10 +65,8 @@ fn try_resize<'a>(
     width: u32,
     height: u32,
 ) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
-    let format = ImageFormat::from_extension(extension).ok_or(std::io::Error::new(
-        std::io::ErrorKind::Unsupported,
-        "invalid format provided",
-    ))?;
+    let format = ImageFormat::from_extension(extension)
+        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
     let img = image::load_from_memory_with_format(buffer, format)?;
     let img = img.resize_to_fill(width, height, Nearest);
 
@@ -79,10 +78,8 @@ fn try_flip<'a>(
     buffer: &'a [u8],
     direction: Direction,
 ) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
-    let format = ImageFormat::from_extension(extension).ok_or(std::io::Error::new(
-        std::io::ErrorKind::Unsupported,
-        "invalid format provided",
-    ))?;
+    let format = ImageFormat::from_extension(extension)
+        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
     let img = image::load_from_memory_with_format(buffer, format)?;
     let img = match direction {
         Direction::Vertical => img.flipv(),
@@ -97,10 +94,8 @@ fn try_rotate<'a>(
     buffer: &'a [u8],
     angle: i32,
 ) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
-    let format = ImageFormat::from_extension(extension).ok_or(std::io::Error::new(
-        std::io::ErrorKind::Unsupported,
-        "invalid format provided",
-    ))?;
+    let format = ImageFormat::from_extension(extension)
+        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
     let img = image::load_from_memory_with_format(buffer, format)?;
     let img = match angle {
         90 => img.rotate90(),
@@ -108,6 +103,19 @@ fn try_rotate<'a>(
         270 => img.rotate270(),
         _ => img.huerotate(angle),
     };
+
+    Ok((img, format))
+}
+
+fn try_blur<'a>(
+    extension: &'a str,
+    buffer: &'a [u8],
+    sigma: f32,
+) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
+    let format = ImageFormat::from_extension(extension)
+        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
+    let img = image::load_from_memory_with_format(buffer, format)?;
+    let img = img.blur(sigma);
 
     Ok((img, format))
 }
