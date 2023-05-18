@@ -1,9 +1,10 @@
 use rustler::{Atom, Binary, Error, NifResult};
-//use rayon::prelude::*;
 use crate::image::{Direction, Image};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageFormat};
-use io::ErrorKind::Unsupported;
+use rayon::prelude::*;
 use std::io;
+use io::ErrorKind::Unsupported;
+use std::sync::{RwLock, Arc};
 
 mod atoms {
     rustler::atoms! {ok, error, png, jpeg, svg}
@@ -20,22 +21,6 @@ mod atoms {
 
 // }
 
-
-// TODO: Create api to parallelise NIF operations when recieve image sets
-// #[rustler::nif]
-// pub fn resize_all<'a>(
-//     images: Vec<Image>,
-//     width: u32,
-//     height: u32,
-// ) -> NifResult<(Atom, Vec<Image>)> {
-//     let images: Vec<_> = images
-//         .par_iter()
-//         .map(|image| alter_image(image.path, 300, 500))
-//         .filter_map(|x| x.err())
-//         .collect();
-// }
-
-
 #[rustler::nif]
 pub fn resize<'a>(
     extension: &'a str,
@@ -48,6 +33,23 @@ pub fn resize<'a>(
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
+}
+
+// TODO
+#[rustler::nif]
+pub fn resize_all<'a>(
+    images: Vec<Image>,
+    width: u32,
+    height: u32,
+    extension: &'a str,
+) -> NifResult<(Atom, Vec<Image>)> {
+    let images = images
+        .into_par_iter()
+        .map(|image| try_resize(&image.extension, &image.bytes.as_slice(), 300, 500))
+        .filter_map(|x| Some(x.unwrap()))
+        .filter_map(|(img, format)| Some(Image::build_async(img, Arc::new(Box::new(extension)), format)));
+
+    images.collect();
 }
 
 #[rustler::nif]
@@ -101,7 +103,11 @@ pub fn blur<'a>(extension: &'a str, bin: Binary<'a>, sigma: f32) -> NifResult<(A
 }
 
 #[rustler::nif]
-pub fn brighten<'a>(extension: &'a str, bin: Binary<'a>, brightness: i32) -> NifResult<(Atom, Image)> {
+pub fn brighten<'a>(
+    extension: &'a str,
+    bin: Binary<'a>,
+    brightness: i32,
+) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match try_brighten(extension, buffer, brightness) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),

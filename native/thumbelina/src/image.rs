@@ -1,6 +1,6 @@
 use image::{DynamicImage, ImageFormat};
 use rustler::{Error, NifStruct};
-use std::io::Cursor;
+use std::{convert::TryInto, io::Cursor};
 
 #[derive(NifStruct)]
 #[module = "Thumbelina.Image"]
@@ -8,7 +8,12 @@ pub struct Image {
     pub extension: String,
     pub height: u32,
     pub width: u32,
-    pub bytes: Vec<u8>,
+    pub bytes: Vec<u8>
+}
+
+pub enum Direction {
+    Horizontal,
+    Vertical,
 }
 
 impl<'a> Image {
@@ -33,24 +38,23 @@ impl<'a> Image {
             Err(_) => Err(Error::BadArg),
         }
     }
+
+// Does not Implement Send
+    pub fn build_async(
+        image: DynamicImage,
+        extension: Arc<Box<&'a str>>,
+        format: ImageFormat,
+    ) -> Result<Image, Error> {
+        let mut result = Cursor::new(Vec::new());
+
+        match image.write_to(&mut result, format) {
+            Ok(_) => Ok(Image {
+                extension: extension.to_string(),
+                height: image.height(),
+                width: image.width(),
+                bytes: result.get_ref().to_owned(),
+            }),
+            Err(_) => Err(Error::BadArg),
+        }
+    }
 }
-
-pub enum Direction {
-    Horizontal,
-    Vertical,
-}
-
-// pub struct ImageMetadata {
-//     path: String,
-//     source: Source,
-//     // fn write to dest
-
-//     // fn modify_inplace(extension, path, source, height, width) -> Self {
-//     //     thumbelina::Image{e}
-//     // }
-// }
-
-// pub enum Source {
-//     Disk,
-//     InMemory,
-// }
