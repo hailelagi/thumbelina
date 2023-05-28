@@ -1,25 +1,15 @@
-use rustler::{Atom, Binary, Error, NifResult};
 use crate::image::{Direction, Image};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageFormat};
-use rayon::prelude::*;
-use std::io;
 use io::ErrorKind::Unsupported;
-use std::sync::{RwLock, Arc};
+use rayon::prelude::*;
+use rustler::{Atom, Binary, Error, NifResult};
+use std::io;
+use std::sync::{Arc, RwLock};
+
 
 mod atoms {
     rustler::atoms! {ok, error, png, jpeg, svg}
 }
-
-// TODO: Serialise any known image operation on dirty CPU
-// #[rustler::nif(schedule = "DirtyCpu")]
-// pub fn serialize_dirty<'a, 's>(
-//     env: Env<'a>,
-//     extension: &'a str,
-//     path: String,
-//     bin: Binary<'a>,
-// ) -> NifResult<(Atom, (thumbelina::Image))> {
-
-// }
 
 #[rustler::nif]
 pub fn resize<'a>(
@@ -35,22 +25,23 @@ pub fn resize<'a>(
     }
 }
 
-// TODO
-#[rustler::nif]
-pub fn resize_all<'a>(
-    images: Vec<Image>,
-    width: u32,
-    height: u32,
-    extension: &'a str,
-) -> NifResult<(Atom, Vec<Image>)> {
-    let images = images
-        .into_par_iter()
-        .map(|image| try_resize(&image.extension, &image.bytes.as_slice(), 300, 500))
-        .filter_map(|x| Some(x.unwrap()))
-        .filter_map(|(img, format)| Some(Image::build_async(img, Arc::new(Box::new(extension)), format)));
+// #[rustler::nif(schedule = "DirtyCpu")]
+// pub fn resize_all<'a>(
+//     images: Vec<Image>,
+//     width: u32,
+//     height: u32,
+//     extension: String,
+// ) -> NifResult<(Atom, Vec<usize>)> {
+//     let capacities = images
+//         .into_par_iter()
+//         .filter_map(|image| {
+//             try_resize(&image.extension, &image.bytes.as_slice(), width, height)
+//                 .map(|(img, _)| img.as_bytes().to_owned().capacity())
+//         })
+//         .collect();
 
-    images.collect();
-}
+//     Ok((atoms::ok(), capacities))
+// }
 
 #[rustler::nif]
 pub fn thumbnail<'a>(

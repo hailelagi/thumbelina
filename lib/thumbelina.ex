@@ -5,7 +5,7 @@ defmodule Thumbelina do
   alias Thumbelina.Image
   alias Thumbelina.Internal
 
-  @type result :: {:ok, {Image.t(), <<_::_*256>>}} | {:error, String.t()}
+  @type result :: {:ok, {Image.t(), <<_::_*255>>}} | {:error, String.t()}
 
   def open(path) do
     ext = Path.extname(path)

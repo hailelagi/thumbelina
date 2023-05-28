@@ -21,9 +21,6 @@ rustler::init!(
         thumbelina::resize,
         thumbelina::thumbnail,
         thumbelina::rotate,
-        //   thumbelina::invert,
-        //   thumbelina::unsharpen
-        //   thumbelina::contrast
         //   thumbelina::crop,
     ],
     load = load
