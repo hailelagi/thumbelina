@@ -1,11 +1,10 @@
 defmodule Thumbelina.Internal do
   @moduledoc """
-  NIF wrapper/rust bindings for image processing library.
-  https://docs.rs/image/latest/image/
+  NIF wrapper/rust bindings for image processing library,
+  Handles FFI Initialisation, scheduling and encoding/decoding to/from image-rs.
+  see: https://docs.rs/image/latest/image/
   """
-
   use Rustler, otp_app: :thumbelina, crate: "thumbelina"
-  # FFI Initialisation, scheduling and encoding
 
   @doc """
     Serialise %Image{} operations as blocking and CPU bound.
@@ -31,6 +30,7 @@ defmodule Thumbelina.Internal do
   def brighten(_, _, _), do: error()
   def greyscale(_, _), do: error()
 
+  # tbd
   # def resize_all(_, _, _), do: error()
   # def contrast(_), do: error()
   # def filter_3x3(_), do: error()

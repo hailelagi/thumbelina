@@ -7,12 +7,15 @@ defmodule Thumbelina do
 
   @type result :: {:ok, {Image.t(), <<_::_*255>>}} | {:error, String.t()}
 
-  def open(path) do
+  def open(path, opts \\ %{}) do
     ext = Path.extname(path)
+    source = Map.get(opts, :source, :disk)
 
-    case File.read(path) do
-      {:ok, binary} -> {:ok, Image.new(ext, path, binary, :disk)}
-      error -> error
+    with {:ok, binary} <- File.read(path),
+         %Image{} = image <- Image.new(ext, path, binary, source) do
+      {:ok, image}
+    else
+      err -> err
     end
   end
 
@@ -64,7 +67,7 @@ defmodule Thumbelina do
       angle when angle in [90, 180, 270] ->
         Internal.rotate(image.extension, image.bytes, angle)
 
-      angle when is_float(angle) ->
+      angle when is_float(angle) or is_integer(angle) ->
         {angle, _} = Integer.parse("#{angle}")
         Internal.rotate(image.extension, image.bytes, angle)
     end
