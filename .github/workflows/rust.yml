@@ -12,10 +12,12 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     name: stable / fmt
+    defaults:
+        run:
+            working-directory: ./native/thumbelina
     steps:
       - uses: actions/checkout@v3
         with:
-          # path: thumbelina/native/thumbelina
           submodules: true
       - name: Install stable
         uses: dtolnay/rust-toolchain@stable
@@ -26,6 +28,9 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     name: ${{ matrix.toolchain }} / clippy
+    defaults:
+        run:
+            working-directory: ./native/thumbelina
     permissions:
       contents: read
       checks: write
@@ -49,6 +54,9 @@ jobs:
   build_and_test:
     name: Rust project - latest
     runs-on: ubuntu-latest
+    defaults:
+        run:
+            working-directory: ./native/thumbelina
     strategy:
       matrix:
         toolchain:
