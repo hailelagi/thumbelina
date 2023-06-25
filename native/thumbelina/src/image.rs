@@ -24,7 +24,6 @@ pub struct SerializedImage<'a> {
     pub bytes: Binary<'a>,
 }
 
-
 pub enum Direction {
     Horizontal,
     Vertical,
