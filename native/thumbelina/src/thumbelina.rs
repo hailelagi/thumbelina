@@ -31,12 +31,13 @@ pub fn resize_all<'a>(
     width: u32,
     height: u32,
 ) -> NifResult<(Atom, Vec<Image>)> {
-    let img_slices: Vec<Vec<u8>> = binaries.iter().map(|bin| bin.as_slice().to_vec()).collect();
-
-    let images: Vec<Image> = img_slices
+    let images = binaries
+        .iter()
+        .map(|bin| bin.as_slice())
+        .collect::<Vec<&[u8]>>()
         .into_par_iter()
         .filter_map(|i| {
-            let resized = try_resize(extension, &i, width, height);
+            let resized = try_resize(extension, i, width, height);
             match resized {
                 Ok((image, format)) => Image::build(image, extension, format).ok(),
                 Err(_err) => None,
