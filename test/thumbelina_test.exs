@@ -39,6 +39,16 @@ defmodule ThumbelinaTest do
     refute image.bytes == resized.bytes
   end
 
+  test "it parallelises resizing many image binaries" do
+    entries = Thumbelina.open_all!("./example/pokemon")
+
+    entries = Enum.map(entries, fn {:ok, e} -> e.bytes end)
+    assert {:ok, entries} = Thumbelina.Internal.resize_all(entries, "png", 50, 50)
+
+    assert length(entries) == 3
+    # todo clean up api and assert on bytes
+  end
+
   test "it makes a thumbnail!", %{image: image} do
     assert {:ok, thumbnail} = Thumbelina.thumbnail(image, 50, 50)
 

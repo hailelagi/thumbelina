@@ -21,6 +21,7 @@ defmodule Thumbelina.Internal do
 
   # Image Processing Functions
   def resize(_, _, _, _), do: error()
+  def resize_all(_, _, _, _), do: error()
   def thumbnail(_, _, _, _), do: error()
   def flip_horizontal(_, _), do: error()
   def flip_vertical(_, _), do: error()

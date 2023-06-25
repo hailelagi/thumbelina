@@ -19,6 +19,7 @@ rustler::init!(
         thumbelina::flip_vertical,
         thumbelina::greyscale,
         thumbelina::resize,
+        thumbelina::resize_all,
         thumbelina::thumbnail,
         thumbelina::rotate,
         //   thumbelina::crop,

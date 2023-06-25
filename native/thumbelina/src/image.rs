@@ -1,7 +1,11 @@
 use image::{DynamicImage, ImageFormat};
-use rustler::{Error, NifStruct};
+use rustler::{Binary, Error, NifStruct};
 use std::io::Cursor;
-use std::sync::Arc;
+
+// TODO: maybe remove this duplication
+// a Vec<u8> cannot be serialised to a Binary<u8> as it's an erlang owned term
+// but it might be possible to impl TryInto
+// or impl para_iter for the Erlang type in a safe way
 
 #[derive(Debug, NifStruct)]
 #[module = "Thumbelina.Image"]
@@ -10,7 +14,16 @@ pub struct Image {
     pub height: u32,
     pub width: u32,
     pub bytes: Vec<u8>,
+    // todo pub path: String,
 }
+
+pub struct SerializedImage<'a> {
+    pub extension: String,
+    pub height: u32,
+    pub width: u32,
+    pub bytes: Binary<'a>,
+}
+
 
 pub enum Direction {
     Horizontal,
@@ -73,7 +86,7 @@ mod tests {
     }
 
     #[test]
-    fn test_build() {
+    fn test_build_image_with_dimensions() {
         let buffer: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(100, 100);
         let image = DynamicImage::ImageRgba8(buffer);
         let extension = "png";

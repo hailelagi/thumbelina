@@ -4,8 +4,7 @@ use io::ErrorKind::Unsupported;
 use rayon::prelude::*;
 use rustler::{Atom, Binary, Error, NifResult};
 use std::io;
-use std::sync::{Arc, RwLock};
-
+// use std::sync::{Arc, RwLock};
 
 mod atoms {
     rustler::atoms! {ok, error, png, jpeg, svg}
@@ -25,23 +24,28 @@ pub fn resize<'a>(
     }
 }
 
-// #[rustler::nif(schedule = "DirtyCpu")]
-// pub fn resize_all<'a>(
-//     images: Vec<Image>,
-//     width: u32,
-//     height: u32,
-//     extension: String,
-// ) -> NifResult<(Atom, Vec<usize>)> {
-//     let capacities = images
-//         .into_par_iter()
-//         .filter_map(|image| {
-//             try_resize(&image.extension, &image.bytes.as_slice(), width, height)
-//                 .map(|(img, _)| img.as_bytes().to_owned().capacity())
-//         })
-//         .collect();
+#[rustler::nif(schedule = "DirtyCpu")]
+pub fn resize_all<'a>(
+    binaries: Vec<Binary<'a>>,
+    extension: &'a str,
+    width: u32,
+    height: u32,
+) -> NifResult<(Atom, Vec<Image>)> {
+    let img_slices: Vec<Vec<u8>> = binaries.iter().map(|bin| bin.as_slice().to_vec()).collect();
 
-//     Ok((atoms::ok(), capacities))
-// }
+    let images: Vec<Image> = img_slices
+        .into_par_iter()
+        .filter_map(|i| {
+            let resized = try_resize(extension, &i, width, height);
+            match resized {
+                Ok((image, format)) => Image::build(image, extension, format).ok(),
+                Err(_err) => None,
+            }
+        })
+        .collect();
+
+    Ok((atoms::ok(), images))
+}
 
 #[rustler::nif]
 pub fn thumbnail<'a>(
