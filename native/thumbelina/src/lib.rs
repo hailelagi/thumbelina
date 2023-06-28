@@ -20,6 +20,7 @@ rustler::init!(
         thumbelina::greyscale,
         thumbelina::resize,
         thumbelina::resize_all,
+        thumbelina::resize_cast,
         thumbelina::thumbnail,
         thumbelina::rotate,
         //   thumbelina::crop,

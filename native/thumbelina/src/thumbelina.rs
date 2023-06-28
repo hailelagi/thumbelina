@@ -1,9 +1,10 @@
-use crate::image::{Direction, Image};
+use crate::image::{Direction, Image, Operation};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageFormat};
 use io::ErrorKind::Unsupported;
-use rayon::prelude::*;
-use rustler::{Atom, Binary, Error, NifResult};
+use rayon::{prelude::*, ThreadPoolBuilder};
+use rustler::{Atom, Binary, Env, Error, LocalPid, NifResult};
 use std::io;
+use tokio::sync::mpsc;
 // use std::sync::{Arc, RwLock};
 
 mod atoms {
@@ -46,6 +47,35 @@ pub fn resize_all<'a>(
         .collect();
 
     Ok((atoms::ok(), images))
+}
+
+#[rustler::nif]
+pub fn resize_cast<'a>(
+    env: Env,
+    binaries: Vec<Binary<'a>>,
+    extension: &'a str,
+    width: u32,
+    height: u32,
+    pid: LocalPid,
+) -> NifResult<Atom> {
+    let (tx, mut rx) = mpsc::channel(256);
+
+    //TODO: scedule on tokio and reply back async in the process mailbox
+    let image_buffers = binaries.iter().map(|bin| bin.as_slice());
+
+    for buffer in image_buffers {
+        tokio::spawn(async move {
+            env.send(
+                &pid,
+                match try_resize(extension, buffer, width, height) {
+                    Ok((image, format)) => Image::build(image, extension, format).unwrap().bytes,
+                    Err(err) => Error::Term(Box::new(err.to_string())),
+                },
+            )
+        });
+    }
+
+    Ok(atoms::ok())
 }
 
 #[rustler::nif]

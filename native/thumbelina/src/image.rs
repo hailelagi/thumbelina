@@ -1,32 +1,19 @@
 use image::{DynamicImage, ImageFormat};
-use rustler::{Binary, Error, NifStruct};
+use rustler::{Binary, Error, NifStruct, NifTuple, NifUnitEnum};
 use std::io::Cursor;
 
 // TODO: maybe remove this duplication
 // a Vec<u8> cannot be serialised to a Binary<u8> as it's an erlang owned term
 // but it might be possible to impl TryInto
 // or impl para_iter for the Erlang type in a safe way
-
 #[derive(Debug, NifStruct)]
 #[module = "Thumbelina.Image"]
 pub struct Image {
     pub extension: String,
     pub height: u32,
     pub width: u32,
-    pub bytes: Vec<u8>,
-    // todo pub path: String,
-}
-
-pub struct SerializedImage<'a> {
-    pub extension: String,
-    pub height: u32,
-    pub width: u32,
-    pub bytes: Binary<'a>,
-}
-
-pub enum Direction {
-    Horizontal,
-    Vertical,
+    pub bytes: Vec<u8>, // Binary<u8>
+                        // todo pub path: String,
 }
 
 impl<'a> Image {
@@ -51,6 +38,23 @@ impl<'a> Image {
             Err(_) => Err(Error::BadArg),
         }
     }
+}
+
+pub enum Direction {
+    Horizontal,
+    Vertical,
+}
+
+#[derive(NifUnitEnum)]
+pub enum Operation {
+    Blur,
+    Brighten,
+    FlipHorizontal,
+    FlipVertical,
+    Greyscale,
+    Resize,
+    Thumbnail,
+    Rotate,
 }
 
 #[cfg(test)]
