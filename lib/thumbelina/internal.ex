@@ -32,7 +32,6 @@ defmodule Thumbelina.Internal do
   def greyscale(_, _), do: error()
 
   # tbd
-  # def resize_all(_, _, _), do: error()
   # def contrast(_), do: error()
   # def filter_3x3(_), do: error()
   # def invert(_), do: error()

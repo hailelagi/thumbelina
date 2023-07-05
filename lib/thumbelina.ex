@@ -5,8 +5,9 @@ defmodule Thumbelina do
   alias Thumbelina.Image
   alias Thumbelina.Internal
 
-  @type result :: {:ok, {Image.t(), <<_::_*255>>}} | {:error, String.t()}
+  @type result :: {:ok, Image.t()} | {:error, String.t()}
 
+  @spec open(String.t(), map()) :: result()
   def open(path, opts \\ %{}) do
     ext = Path.extname(path)
     source = Map.get(opts, :source, :disk)
@@ -19,6 +20,7 @@ defmodule Thumbelina do
     end
   end
 
+  @spec open_all!(String.t()) :: [Enumerable.t()]
   def open_all!(path) do
     path
     |> File.ls!()
@@ -30,6 +32,7 @@ defmodule Thumbelina do
     to use `File.open/1` due to the number of open file descriptors and would like control
     over how many bytes are read into memory at a time. Defaults to 2 ** 16 bytes or ~65kb.
   """
+  @spec stream_directory!(String.t(), pos_integer()) :: [Enumerable.t()]
   def stream_directory!(path, bytes \\ 65536) do
     path
     |> File.ls!()
@@ -61,7 +64,7 @@ defmodule Thumbelina do
     end
   end
 
-  @spec rotate(Thumbelina.Image.t(), pos_integer()) :: result()
+  @spec rotate(Image.t(), pos_integer()) :: result()
   def rotate(%Image{} = image, angle) when angle > 0 and angle <= 360 do
     case angle do
       angle when angle in [90, 180, 270] ->
@@ -75,7 +78,7 @@ defmodule Thumbelina do
 
   def rotate(%Image{}, _), do: {:error, "invalid rotation angle. Must be in range 1..360"}
 
-  @spec blur(Thumbelina.Image.t(), float()) :: result()
+  @spec blur(Image.t(), float()) :: result()
   def blur(%Image{} = image, sigma) do
     case sigma do
       sigma when is_integer(sigma) ->
@@ -90,7 +93,7 @@ defmodule Thumbelina do
     end
   end
 
-  @spec brighten(Thumbelina.Image.t(), pos_integer()) :: result()
+  @spec brighten(Image.t(), pos_integer()) :: result()
   def brighten(%Image{} = image, brightness) do
     case brightness do
       brightness when is_float(brightness) ->
@@ -105,6 +108,6 @@ defmodule Thumbelina do
     end
   end
 
-  @spec greyscale(Thumbelina.Image.t()) :: result()
+  @spec greyscale(Image.t()) :: result()
   def greyscale(%Image{} = image), do: Internal.greyscale(image.extension, image.bytes)
 end
