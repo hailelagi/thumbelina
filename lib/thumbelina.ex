@@ -42,7 +42,7 @@ defmodule Thumbelina do
 
   @spec resize(Image.t(), pos_integer(), pos_integer()) :: result()
   def resize(%Image{} = image, width, height) do
-    Internal.resize(image.extension, image.bytes, width, height)
+    Internal.resize(image.bytes, image.extension, width, height)
   end
 
   @spec crop(Image.t(), pos_integer(), pos_integer()) :: result()

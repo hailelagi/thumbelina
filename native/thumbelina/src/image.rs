@@ -45,18 +45,6 @@ pub enum Direction {
     Vertical,
 }
 
-#[derive(NifUnitEnum)]
-pub enum Operation {
-    Blur,
-    Brighten,
-    FlipHorizontal,
-    FlipVertical,
-    Greyscale,
-    Resize,
-    Thumbnail,
-    Rotate,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

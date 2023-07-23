@@ -1,6 +1,8 @@
 use rustler::{Env, Term};
+
 pub mod image;
 pub mod server;
+pub mod operation;
 pub mod thumbelina;
 
 fn load(env: Env, _: Term) -> bool {
@@ -11,8 +13,8 @@ fn load(env: Env, _: Term) -> bool {
 rustler::init!(
     "Elixir.Thumbelina.Internal",
     [
-        //   thumbelina::serialize_dirty,
-        //   thumbelina::server,
+        // thumbelina::server,
+        // thumbelina::cast,
         thumbelina::blur,
         thumbelina::brighten,
         thumbelina::flip_horizontal,
@@ -20,7 +22,6 @@ rustler::init!(
         thumbelina::greyscale,
         thumbelina::resize,
         thumbelina::resize_all,
-        thumbelina::resize_cast,
         thumbelina::thumbnail,
         thumbelina::rotate,
         //   thumbelina::crop,

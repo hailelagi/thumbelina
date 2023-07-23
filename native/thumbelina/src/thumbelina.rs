@@ -1,25 +1,74 @@
-use crate::image::{Direction, Image, Operation};
+use crate::image::{Direction, Image};
+use crate::operation;
+use crate::operation::{Operation};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageFormat};
 use io::ErrorKind::Unsupported;
 use rayon::{prelude::*, ThreadPoolBuilder};
 use rustler::{Atom, Binary, Env, Error, LocalPid, NifResult};
-use std::io;
+use std::{io, sync::{Arc}};
 use tokio::sync::mpsc;
-// use std::sync::{Arc, RwLock};
 
-mod atoms {
+mod atoms { 
     rustler::atoms! {ok, error, png, jpeg, svg}
 }
 
+// Asynchronously clone erlang owned bytes and write them to a new buffer
+// within the managed tokio runtime address space, casting it to a DynamicImage performing an `Operation` 
+// and replying back to the client immediately with an :ok or `:noop`.
+// This is done to relinquish scheduler time to the caller in erts.
+// where in the client's server process mailbox the reply will be delivered with `{:"ok_{operation}", image_bytes}`
+//  #[rustler::nif]
+// pub fn cast<'a>(
+//     env: Env,
+//     binaries: Vec<Binary<'a>>,
+//     extension: &'a str,
+//     width: f32,
+//     height: f32,
+//     pid: LocalPid,
+//     operation: Operation
+// ) -> NifResult<Atom> {
+//     match operation {
+//         Operation::Resize => resize_all_async(env, binaries, extension, width, height, pid),
+//         Operation::Thumbnail => thumbnail_all_async(env, binaries, extension, width, height, pid),
+//         Operation::FlipHorizontal => flip_all_async(env, binaries, extension, Direction::Horizontal, pid),
+//         Operation::FlipVertical => flip_all_async(env, binaries, extension, Direction::Vertical, pid),
+//         Operation::Rotate => rotate_all_async(env, binaries, extension, width as i32, pid),
+//         Operation::Blur => blur_all_async(env, binaries, extension, width as f32, pid),
+//         Operation::Brighten => brighten_all_async(env, binaries, extension, width as i32, pid),
+//         Operation::Greyscale => greyscale_all_async(env, binaries, extension, pid),
+//         // Operation::Crop => crop_all_async(env, binaries, extension, width, height, pid),
+//     }
+
+//     //TODO: decide on an IO schedule message passing strategy
+//     let (tx, mut rx) = mpsc::channel(256);
+
+//     //TODO: scedule on tokio and reply back async in the process mailbox
+//     let image_buffers = binaries.iter().map(|bin| bin.as_slice());
+
+//     for buffer in image_buffers {
+//         tokio::spawn(async move {
+//             env.send(
+//                 &pid,
+//                 match try_resize(extension, buffer, width, height) {
+//                     Ok((image, format)) => Image::build(image, extension, format).unwrap().bytes,
+//                     Err(err) => Error::Term(Box::new(err.to_string())),
+//                 },
+//             )
+//         });
+//     }
+
+//     Ok(atoms::ok())
+// }
+
 #[rustler::nif]
 pub fn resize<'a>(
-    extension: &'a str,
     bin: Binary<'a>,
+    extension: &'a str,
     width: u32,
     height: u32,
 ) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match try_resize(extension, buffer, width, height) {
+    match operation::try_resize(extension, buffer, width, height) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -38,7 +87,7 @@ pub fn resize_all<'a>(
         .collect::<Vec<&[u8]>>()
         .into_par_iter()
         .filter_map(|i| {
-            let resized = try_resize(extension, i, width, height);
+            let resized =  operation::try_resize(extension, i, width, height);
             match resized {
                 Ok((image, format)) => Image::build(image, extension, format).ok(),
                 Err(_err) => None,
@@ -50,35 +99,6 @@ pub fn resize_all<'a>(
 }
 
 #[rustler::nif]
-pub fn resize_cast<'a>(
-    env: Env,
-    binaries: Vec<Binary<'a>>,
-    extension: &'a str,
-    width: u32,
-    height: u32,
-    pid: LocalPid,
-) -> NifResult<Atom> {
-    let (tx, mut rx) = mpsc::channel(256);
-
-    //TODO: scedule on tokio and reply back async in the process mailbox
-    let image_buffers = binaries.iter().map(|bin| bin.as_slice());
-
-    for buffer in image_buffers {
-        tokio::spawn(async move {
-            env.send(
-                &pid,
-                match try_resize(extension, buffer, width, height) {
-                    Ok((image, format)) => Image::build(image, extension, format).unwrap().bytes,
-                    Err(err) => Error::Term(Box::new(err.to_string())),
-                },
-            )
-        });
-    }
-
-    Ok(atoms::ok())
-}
-
-#[rustler::nif]
 pub fn thumbnail<'a>(
     extension: &'a str,
     bin: Binary<'a>,
@@ -86,7 +106,7 @@ pub fn thumbnail<'a>(
     nheight: u32,
 ) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match try_thumbnail(extension, buffer, nwidth, nheight) {
+    match operation::try_thumbnail(extension, buffer, nwidth, nheight) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -95,7 +115,7 @@ pub fn thumbnail<'a>(
 #[rustler::nif]
 pub fn flip_horizontal<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match try_flip(extension, buffer, Direction::Horizontal) {
+    match operation::try_flip(extension, buffer, Direction::Horizontal) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -104,7 +124,7 @@ pub fn flip_horizontal<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(At
 #[rustler::nif]
 pub fn flip_vertical<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match try_flip(extension, buffer, Direction::Vertical) {
+    match operation::try_flip(extension, buffer, Direction::Vertical) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -113,7 +133,7 @@ pub fn flip_vertical<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom
 #[rustler::nif]
 pub fn rotate<'a>(extension: &'a str, bin: Binary<'a>, angle: i32) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match try_rotate(extension, buffer, angle) {
+    match operation::try_rotate(extension, buffer, angle) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -122,7 +142,7 @@ pub fn rotate<'a>(extension: &'a str, bin: Binary<'a>, angle: i32) -> NifResult<
 #[rustler::nif]
 pub fn blur<'a>(extension: &'a str, bin: Binary<'a>, sigma: f32) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match try_blur(extension, buffer, sigma) {
+    match operation::try_blur(extension, buffer, sigma) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -135,7 +155,7 @@ pub fn brighten<'a>(
     brightness: i32,
 ) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match try_brighten(extension, buffer, brightness) {
+    match operation::try_brighten(extension, buffer, brightness) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -144,108 +164,8 @@ pub fn brighten<'a>(
 #[rustler::nif]
 pub fn greyscale<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match try_greyscale(extension, buffer) {
+    match operation::try_greyscale(extension, buffer) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
-}
-
-fn try_resize<'a>(
-    extension: &'a str,
-    buffer: &'a [u8],
-    width: u32,
-    height: u32,
-) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
-    let format = ImageFormat::from_extension(extension)
-        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
-    let img = image::load_from_memory_with_format(buffer, format)?;
-    let img = img.resize_to_fill(width, height, Nearest);
-
-    Ok((img, format))
-}
-
-fn try_thumbnail<'a>(
-    extension: &'a str,
-    buffer: &'a [u8],
-    nwidth: u32,
-    nheight: u32,
-) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
-    let format = ImageFormat::from_extension(extension)
-        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
-    let img = image::load_from_memory_with_format(buffer, format)?;
-    let img = img.thumbnail(nwidth, nheight);
-
-    Ok((img, format))
-}
-
-fn try_flip<'a>(
-    extension: &'a str,
-    buffer: &'a [u8],
-    direction: Direction,
-) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
-    let format = ImageFormat::from_extension(extension)
-        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
-    let img = image::load_from_memory_with_format(buffer, format)?;
-    let img = match direction {
-        Direction::Vertical => img.flipv(),
-        Direction::Horizontal => img.fliph(),
-    };
-
-    Ok((img, format))
-}
-
-fn try_rotate<'a>(
-    extension: &'a str,
-    buffer: &'a [u8],
-    angle: i32,
-) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
-    let format = ImageFormat::from_extension(extension)
-        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
-    let img = image::load_from_memory_with_format(buffer, format)?;
-    let img = match angle {
-        90 => img.rotate90(),
-        180 => img.rotate180(),
-        270 => img.rotate270(),
-        _ => img.huerotate(angle),
-    };
-
-    Ok((img, format))
-}
-
-fn try_blur<'a>(
-    extension: &'a str,
-    buffer: &'a [u8],
-    sigma: f32,
-) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
-    let format = ImageFormat::from_extension(extension)
-        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
-    let img = image::load_from_memory_with_format(buffer, format)?;
-    let img = img.blur(sigma);
-
-    Ok((img, format))
-}
-
-fn try_brighten<'a>(
-    extension: &'a str,
-    buffer: &'a [u8],
-    value: i32,
-) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
-    let format = ImageFormat::from_extension(extension)
-        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
-    let img = image::load_from_memory_with_format(buffer, format)?;
-    let img = img.brighten(value);
-
-    Ok((img, format))
-}
-
-fn try_greyscale<'a>(
-    extension: &'a str,
-    buffer: &'a [u8],
-) -> Result<(DynamicImage, ImageFormat), image::ImageError> {
-    let format = ImageFormat::from_extension(extension)
-        .ok_or(io::Error::new(Unsupported, "invalid format provided"))?;
-    let img = image::load_from_memory_with_format(buffer, format)?;
-    let img = img.grayscale();
-
-    Ok((img, format))
 }
