@@ -4,6 +4,7 @@ pub mod image;
 pub mod server;
 pub mod operation;
 pub mod thumbelina;
+pub mod task;
 
 fn load(env: Env, _: Term) -> bool {
     rustler::resource!(image::Image, env);

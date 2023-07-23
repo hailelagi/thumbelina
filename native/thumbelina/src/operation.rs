@@ -17,6 +17,8 @@ pub enum Operation {
     Rotate,
 }
 
+/// Tries to resize the given image with the specified dimensions.
+/// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.resize
 pub fn try_resize<'a>(
     extension: &'a str,
     buffer: &'a [u8],
@@ -33,17 +35,7 @@ pub fn try_resize<'a>(
 
 
 /// Tries to create a thumbnail of the given image with the specified dimensions.
-///
-/// # Arguments
-///
-/// * `extension` - A string slice that holds the file extension of the image.
-/// * `buffer` - A byte slice that holds the image data.
-/// * `nwidth` - The width of the thumbnail.
-/// * `nheight` - The height of the thumbnail.
-///
-/// # Returns
-///
-/// A `Result` containing a tuple of the thumbnail image and its format, or an `ImageError` if the operation fails.
+/// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.thumbnail
 pub fn try_thumbnail<'a>(
     extension: &'a str,
     buffer: &'a [u8],
@@ -59,16 +51,8 @@ pub fn try_thumbnail<'a>(
 }
 
 /// Tries to flip the given image in the specified direction.
-///
-/// # Arguments
-///
-/// * `extension` - A string slice that holds the file extension of the image.
-/// * `buffer` - A byte slice that holds the image data.
-/// * `direction` - The direction in which to flip the image.
-///
-/// # Returns
-///
-/// A `Result` containing a tuple of the flipped image and its format, or an `ImageError` if the operation fails.
+/// either veritcal or horizontal.
+/// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.flipv
 pub fn try_flip<'a>(
     extension: &'a str,
     buffer: &'a [u8],
@@ -85,17 +69,8 @@ pub fn try_flip<'a>(
     Ok((img, format))
 }
 
-/// Tries to rotate the given image by the specified angle.
-///
-/// # Arguments
-///
-/// * `extension` - A string slice that holds the file extension of the image.
-/// * `buffer` - A byte slice that holds the image data.
-/// * `angle` - The angle by which to rotate the image.
-///
-/// # Returns
-///
-/// A `Result` containing a tuple of the rotated image and its format, or an `ImageError` if the operation fails.
+/// Tries to rotate the given image by the specified angle, 90, 180, or 270.
+/// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.rotate90
 pub fn try_rotate<'a>(
     extension: &'a str,
     buffer: &'a [u8],
@@ -115,16 +90,7 @@ pub fn try_rotate<'a>(
 }
 
 /// Tries to blur the given image with the specified sigma value.
-///
-/// # Arguments
-///
-/// * `extension` - A string slice that holds the file extension of the image.
-/// * `buffer` - A byte slice that holds the image data.
-/// * `sigma` - The sigma value to use for the blur operation.
-///
-/// # Returns
-///
-/// A `Result` containing a tuple of the blurred image and its format, or an `ImageError` if the operation fails.
+/// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.blur
 pub fn try_blur<'a>(
     extension: &'a str,
     buffer: &'a [u8],
@@ -139,16 +105,7 @@ pub fn try_blur<'a>(
 }
 
 /// Tries to brighten the given image with the specified value.
-///
-/// # Arguments
-///
-/// * `extension` - A string slice that holds the file extension of the image.
-/// * `buffer` - A byte slice that holds the image data.
-/// * `value` - The value to use for the brighten operation.
-///
-/// # Returns
-///
-/// A `Result` containing a tuple of the brightened image and its format, or an `ImageError` if the operation fails.
+/// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.brighten
 pub fn try_brighten<'a>(
     extension: &'a str,
     buffer: &'a [u8],
@@ -163,15 +120,7 @@ pub fn try_brighten<'a>(
 }
 
 /// Tries to convert the given image to greyscale.
-///
-/// # Arguments 
-///
-/// * `extension` - A string slice that holds the file extension of the image.
-/// * `buffer` - A byte slice that holds the image data.
-///
-/// # Returns
-///
-/// A `Result` containing a tuple of the greyscaled image and its format, or an `ImageError` if the operation fails.
+/// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.grayscale
 pub fn try_greyscale<'a>(
     extension: &'a str,
     buffer: &'a [u8],
@@ -189,7 +138,6 @@ pub fn try_greyscale<'a>(
 mod tests {
     use super::*;
     use std::fs;
-    use image::GenericImageView;
 
     #[test]
     fn test_try_rotate() {

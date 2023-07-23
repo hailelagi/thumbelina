@@ -1,5 +1,5 @@
 use image::{DynamicImage, ImageFormat};
-use rustler::{Binary, Error, NifStruct};
+use rustler::{Error, NifStruct};
 use std::io::Cursor;
 
 // TODO: maybe remove this duplication

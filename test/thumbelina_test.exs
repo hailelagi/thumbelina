@@ -46,20 +46,16 @@ defmodule ThumbelinaTest do
     assert {:ok, entries} = Thumbelina.Internal.resize_all(entries, "png", 50, 50)
 
     assert length(entries) == 3
-    # todo clean up api and assert on bytes
   end
 
-  test "it asynchronously schedules resizing many image binaries" do
+  test "it asynchronously schedules an image operation", %{image: image} do
     {:ok, pid} = Agent.start_link(fn -> %{} end)
-    entries = Thumbelina.open_all!("./example/pokemon")
+    assert :ok = Thumbelina.Internal.cast(:resize, image, pid, "png", 50, 50)
 
-    entries = Enum.map(entries, fn {:ok, e} -> e.bytes end)
-    assert :ok = Thumbelina.Internal.resize_cast(entries, pid, "png", 50, 50)
+    resized_image = Agent.get(pid, fn state -> state end)
 
-    entries = Agent.get(pid, fn state -> state end)
-
-    assert_receive {:resize, _}, 20_000
-    # todo clean up api and assert on bytes
+    assert_receive {:ok, :resize, _}, 20_000
+    assert resized_image
   end
 
   test "it makes a thumbnail!", %{image: image} do

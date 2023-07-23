@@ -1,12 +1,7 @@
 use crate::image::{Direction, Image};
 use crate::operation;
-use crate::operation::{Operation};
-use image::{imageops::FilterType::Nearest, DynamicImage, ImageFormat};
-use io::ErrorKind::Unsupported;
-use rayon::{prelude::*, ThreadPoolBuilder};
-use rustler::{Atom, Binary, Env, Error, LocalPid, NifResult};
-use std::{io, sync::{Arc}};
-// use tokio::sync::mpsc;
+use rayon::prelude::*;
+use rustler::{Atom, Binary, Error, NifResult};
 
 mod atoms { 
     rustler::atoms! {ok, noop, error, png, jpeg, svg}
@@ -18,27 +13,27 @@ mod atoms {
 // within the managed tokio runtime address space, casting it to a `DynamicImage` performing an `Operation` 
 // and replying back to the client process immediately with an :ok or `:noop`.
 // This is done to relinquish scheduler time to the caller in erts counting as full reduction op.
-// where in the client's server process mailbox the reply will be delivered with `{:"ok_{operation}", image_bytes}`
+// where in the client's server process mailbox the reply will be delivered with `{:ok, :"{operation}", image_bytes}`
 // provides two flavors `cast` for fire and forget on a single large image `cast_all` for several.
- #[rustler::nif]
-pub fn cast<'a>(
-    env: Env,
-    bin: Binary<'a>,
-    extension: &'a str,
-    width: f32, 
-    height: f32,
-    pid: LocalPid,
-    operation: Operation
-) -> NifResult<Atom> {
+//  #[rustler::nif]
+// pub fn cast<'a>(
+//     env: Env,
+//     bin: Binary<'a>,
+//     extension: &'a str,
+//     width: f32, 
+//     height: f32,
+//     pid: LocalPid,
+//     operation: Operation
+// ) -> NifResult<Atom> {
 
-    // //TODO: decide on an IO schedule message passing strategy
-    // let (tx, mut rx) = mpsc::channel(256);
+//     // //TODO: decide on an IO schedule message passing strategy
+//     // let (tx, mut rx) = mpsc::channel(256);
 
-    // //TODO: scedule on tokio and reply back async in the process mailbox
-    // let buffer = bin.as_slice();
+//     // //TODO: scedule on tokio and reply back async in the process mailbox
+//     // let buffer = bin.as_slice();
     
-    Ok(atoms::ok())
-}
+//     Ok(atoms::ok())
+// }
 
 //  #[rustler::nif]
 // pub fn cast_all<'a>(
