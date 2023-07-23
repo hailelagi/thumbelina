@@ -6,19 +6,42 @@ use io::ErrorKind::Unsupported;
 use rayon::{prelude::*, ThreadPoolBuilder};
 use rustler::{Atom, Binary, Env, Error, LocalPid, NifResult};
 use std::{io, sync::{Arc}};
-use tokio::sync::mpsc;
+// use tokio::sync::mpsc;
 
 mod atoms { 
-    rustler::atoms! {ok, error, png, jpeg, svg}
+    rustler::atoms! {ok, noop, error, png, jpeg, svg}
 }
 
+// TODO: provide opt-in time outs and cancellations
+
 // Asynchronously clone erlang owned bytes and write them to a new buffer
-// within the managed tokio runtime address space, casting it to a DynamicImage performing an `Operation` 
-// and replying back to the client immediately with an :ok or `:noop`.
-// This is done to relinquish scheduler time to the caller in erts.
+// within the managed tokio runtime address space, casting it to a `DynamicImage` performing an `Operation` 
+// and replying back to the client process immediately with an :ok or `:noop`.
+// This is done to relinquish scheduler time to the caller in erts counting as full reduction op.
 // where in the client's server process mailbox the reply will be delivered with `{:"ok_{operation}", image_bytes}`
+// provides two flavors `cast` for fire and forget on a single large image `cast_all` for several.
+ #[rustler::nif]
+pub fn cast<'a>(
+    env: Env,
+    bin: Binary<'a>,
+    extension: &'a str,
+    width: f32, 
+    height: f32,
+    pid: LocalPid,
+    operation: Operation
+) -> NifResult<Atom> {
+
+    // //TODO: decide on an IO schedule message passing strategy
+    // let (tx, mut rx) = mpsc::channel(256);
+
+    // //TODO: scedule on tokio and reply back async in the process mailbox
+    // let buffer = bin.as_slice();
+    
+    Ok(atoms::ok())
+}
+
 //  #[rustler::nif]
-// pub fn cast<'a>(
+// pub fn cast_all<'a>(
 //     env: Env,
 //     binaries: Vec<Binary<'a>>,
 //     extension: &'a str,
@@ -26,39 +49,7 @@ mod atoms {
 //     height: f32,
 //     pid: LocalPid,
 //     operation: Operation
-// ) -> NifResult<Atom> {
-//     match operation {
-//         Operation::Resize => resize_all_async(env, binaries, extension, width, height, pid),
-//         Operation::Thumbnail => thumbnail_all_async(env, binaries, extension, width, height, pid),
-//         Operation::FlipHorizontal => flip_all_async(env, binaries, extension, Direction::Horizontal, pid),
-//         Operation::FlipVertical => flip_all_async(env, binaries, extension, Direction::Vertical, pid),
-//         Operation::Rotate => rotate_all_async(env, binaries, extension, width as i32, pid),
-//         Operation::Blur => blur_all_async(env, binaries, extension, width as f32, pid),
-//         Operation::Brighten => brighten_all_async(env, binaries, extension, width as i32, pid),
-//         Operation::Greyscale => greyscale_all_async(env, binaries, extension, pid),
-//         // Operation::Crop => crop_all_async(env, binaries, extension, width, height, pid),
-//     }
-
-//     //TODO: decide on an IO schedule message passing strategy
-//     let (tx, mut rx) = mpsc::channel(256);
-
-//     //TODO: scedule on tokio and reply back async in the process mailbox
-//     let image_buffers = binaries.iter().map(|bin| bin.as_slice());
-
-//     for buffer in image_buffers {
-//         tokio::spawn(async move {
-//             env.send(
-//                 &pid,
-//                 match try_resize(extension, buffer, width, height) {
-//                     Ok((image, format)) => Image::build(image, extension, format).unwrap().bytes,
-//                     Err(err) => Error::Term(Box::new(err.to_string())),
-//                 },
-//             )
-//         });
-//     }
-
-//     Ok(atoms::ok())
-// }
+// ) ->
 
 #[rustler::nif]
 pub fn resize<'a>(
