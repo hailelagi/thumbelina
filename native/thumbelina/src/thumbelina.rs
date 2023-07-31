@@ -1,9 +1,9 @@
 use crate::image::{Direction, Image};
 use crate::operation;
-use rayon::prelude::*;
-use rustler::{Atom, Binary, Error, NifResult};
+use rustler::{Atom, Binary, Error, Encoder, NifResult};
 use rustler::env::OwnedEnv;
 use rustler::types::LocalPid;
+use rayon::prelude::*;
 
 mod atoms { 
     rustler::atoms! {ok, noop, error, png, jpeg, svg}
@@ -29,7 +29,7 @@ mod atoms {
 //     let mut env = OwnedEnv::new();
 //     let data = "test".to_string();
     
-//     msg_env.send_and_clear(pid, |env| data.encode_utf16());
+//     env.send_and_clear(pid, |env| data.encode_utf16());
 
 //     Ok(atoms::ok())
 // }

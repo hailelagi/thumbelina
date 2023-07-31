@@ -1,10 +1,12 @@
 use std::io;
 use std::io::ErrorKind::Unsupported;
+use std::sync::Mutex;
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageFormat, ImageError};
-use rustler::NifUnitEnum;
+use rustler::{NifUnitEnum, LocalPid};
 use crate::image::Direction;
+// use log::trace;
 
-/// Enum representing the different image operations that can be performed.
+/// Public enum representing the different image operations that can be performed.
 #[derive(NifUnitEnum)]
 pub enum Operation {
     Blur,

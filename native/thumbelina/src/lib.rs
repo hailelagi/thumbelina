@@ -1,7 +1,7 @@
 use rustler::{Env, Term};
 
 pub mod image;
-pub mod server;
+pub mod processor;
 pub mod operation;
 pub mod thumbelina;
 pub mod task;
