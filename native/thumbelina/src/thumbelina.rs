@@ -2,6 +2,8 @@ use crate::image::{Direction, Image};
 use crate::operation;
 use rayon::prelude::*;
 use rustler::{Atom, Binary, Error, NifResult};
+use rustler::env::OwnedEnv;
+use rustler::types::LocalPid;
 
 mod atoms { 
     rustler::atoms! {ok, noop, error, png, jpeg, svg}
@@ -17,21 +19,18 @@ mod atoms {
 // provides two flavors `cast` for fire and forget on a single large image `cast_all` for several.
 //  #[rustler::nif]
 // pub fn cast<'a>(
-//     env: Env,
+//     pid: &LocalPid,
 //     bin: Binary<'a>,
 //     extension: &'a str,
 //     width: f32, 
 //     height: f32,
-//     pid: LocalPid,
 //     operation: Operation
 // ) -> NifResult<Atom> {
-
-//     // //TODO: decide on an IO schedule message passing strategy
-//     // let (tx, mut rx) = mpsc::channel(256);
-
-//     // //TODO: scedule on tokio and reply back async in the process mailbox
-//     // let buffer = bin.as_slice();
+//     let mut env = OwnedEnv::new();
+//     let data = "test".to_string();
     
+//     msg_env.send_and_clear(pid, |env| data.encode_utf16());
+
 //     Ok(atoms::ok())
 // }
 
