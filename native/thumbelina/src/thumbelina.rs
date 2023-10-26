@@ -1,18 +1,18 @@
 use crate::image::{Direction, Image};
 use crate::operation;
-use rustler::{Atom, Binary, Error, Encoder, NifResult};
+use rayon::prelude::*;
 use rustler::env::OwnedEnv;
 use rustler::types::LocalPid;
-use rayon::prelude::*;
+use rustler::{Atom, Binary, Encoder, Error, NifResult};
 
-mod atoms { 
+mod atoms {
     rustler::atoms! {ok, noop, error, png, jpeg, svg}
 }
 
 // TODO: provide opt-in time outs and cancellations
 
 // Asynchronously clone erlang owned bytes and write them to a new buffer
-// within the managed tokio runtime address space, casting it to a `DynamicImage` performing an `Operation` 
+// within the managed tokio runtime address space, casting it to a `DynamicImage` performing an `Operation`
 // and replying back to the client process immediately with an :ok or `:noop`.
 // This is done to relinquish scheduler time to the caller in erts counting as full reduction op.
 // where in the client's server process mailbox the reply will be delivered with `{:ok, :"{operation}", image_bytes}`
@@ -22,13 +22,13 @@ mod atoms {
 //     pid: &LocalPid,
 //     bin: Binary<'a>,
 //     extension: &'a str,
-//     width: f32, 
+//     width: f32,
 //     height: f32,
 //     operation: Operation
 // ) -> NifResult<Atom> {
 //     let mut env = OwnedEnv::new();
 //     let data = "test".to_string();
-    
+
 //     env.send_and_clear(pid, |env| data.encode_utf16());
 
 //     Ok(atoms::ok())
@@ -72,7 +72,7 @@ pub fn resize_all<'a>(
         .collect::<Vec<&[u8]>>()
         .into_par_iter()
         .filter_map(|i| {
-            let resized =  operation::try_resize(extension, i, width, height);
+            let resized = operation::try_resize(extension, i, width, height);
             match resized {
                 Ok((image, format)) => Image::build(image, extension, format).ok(),
                 Err(_err) => None,
@@ -85,8 +85,8 @@ pub fn resize_all<'a>(
 
 #[rustler::nif]
 pub fn thumbnail<'a>(
-    extension: &'a str,
     bin: Binary<'a>,
+    extension: &'a str,
     nwidth: u32,
     nheight: u32,
 ) -> NifResult<(Atom, Image)> {
@@ -98,7 +98,7 @@ pub fn thumbnail<'a>(
 }
 
 #[rustler::nif]
-pub fn flip_horizontal<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
+pub fn flip_horizontal<'a>(bin: Binary<'a>, extension: &'a str) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match operation::try_flip(extension, buffer, Direction::Horizontal) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
@@ -107,7 +107,7 @@ pub fn flip_horizontal<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(At
 }
 
 #[rustler::nif]
-pub fn flip_vertical<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
+pub fn flip_vertical<'a>(bin: Binary<'a>, extension: &'a str) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match operation::try_flip(extension, buffer, Direction::Vertical) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
@@ -116,7 +116,7 @@ pub fn flip_vertical<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom
 }
 
 #[rustler::nif]
-pub fn rotate<'a>(extension: &'a str, bin: Binary<'a>, angle: i32) -> NifResult<(Atom, Image)> {
+pub fn rotate<'a>(bin: Binary<'a>, extension: &'a str, angle: i32) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match operation::try_rotate(extension, buffer, angle) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
@@ -125,7 +125,7 @@ pub fn rotate<'a>(extension: &'a str, bin: Binary<'a>, angle: i32) -> NifResult<
 }
 
 #[rustler::nif]
-pub fn blur<'a>(extension: &'a str, bin: Binary<'a>, sigma: f32) -> NifResult<(Atom, Image)> {
+pub fn blur<'a>(bin: Binary<'a>, extension: &'a str, sigma: f32) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match operation::try_blur(extension, buffer, sigma) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
@@ -135,8 +135,8 @@ pub fn blur<'a>(extension: &'a str, bin: Binary<'a>, sigma: f32) -> NifResult<(A
 
 #[rustler::nif]
 pub fn brighten<'a>(
-    extension: &'a str,
     bin: Binary<'a>,
+    extension: &'a str,
     brightness: i32,
 ) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
@@ -147,7 +147,7 @@ pub fn brighten<'a>(
 }
 
 #[rustler::nif]
-pub fn greyscale<'a>(extension: &'a str, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
+pub fn greyscale<'a>(bin: Binary<'a>, extension: &'a str) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
     match operation::try_greyscale(extension, buffer) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),

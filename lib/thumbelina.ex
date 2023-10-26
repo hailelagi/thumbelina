@@ -47,19 +47,19 @@ defmodule Thumbelina do
 
   @spec crop(Image.t(), pos_integer(), pos_integer()) :: result()
   def crop(%Image{} = image, width, height) do
-    Internal.crop(image.extension, image.bytes, width, height)
+    Internal.crop(image.bytes, image.extension, width, height)
   end
 
   @spec thumbnail(Image.t(), pos_integer(), pos_integer()) :: result()
   def thumbnail(%Image{} = image, new_width, new_height) do
-    Internal.thumbnail(image.extension, image.bytes, new_width, new_height)
+    Internal.thumbnail(image.bytes, image.extension, new_width, new_height)
   end
 
   @spec flip(Image.t(), :vertical | :horizontal) :: result()
   def flip(%Image{} = image, direction) do
     case direction do
-      :vertical -> Internal.flip_vertical(image.extension, image.bytes)
-      :horizontal -> Internal.flip_horizontal(image.extension, image.bytes)
+      :vertical -> Internal.flip_vertical(image.bytes, image.extension)
+      :horizontal -> Internal.flip_horizontal(image.bytes, image.extension)
       _ -> {:error, "Invalid direction for flip"}
     end
   end
@@ -68,11 +68,11 @@ defmodule Thumbelina do
   def rotate(%Image{} = image, angle) when angle > 0 and angle <= 360 do
     case angle do
       angle when angle in [90, 180, 270] ->
-        Internal.rotate(image.extension, image.bytes, angle)
+        Internal.rotate(image.bytes, image.extension, angle)
 
       angle when is_float(angle) or is_integer(angle) ->
         {angle, _} = Integer.parse("#{angle}")
-        Internal.rotate(image.extension, image.bytes, angle)
+        Internal.rotate(image.bytes, image.extension, angle)
     end
   end
 
@@ -83,10 +83,10 @@ defmodule Thumbelina do
     case sigma do
       sigma when is_integer(sigma) ->
         {sigma, _} = Float.parse("#{sigma}")
-        Internal.blur(image.extension, image.bytes, sigma)
+        Internal.blur(image.bytes, image.extension, sigma)
 
       sigma when is_float(sigma) ->
-        Internal.blur(image.extension, image.bytes, sigma)
+        Internal.blur(image.bytes, image.extension, sigma)
 
       _ ->
         {:error, "gausian blur must be a float"}
@@ -98,10 +98,10 @@ defmodule Thumbelina do
     case brightness do
       brightness when is_float(brightness) ->
         {brightness, _} = Integer.parse("#{brightness}")
-        Internal.brighten(image.extension, image.bytes, brightness)
+        Internal.brighten(image.bytes, image.extension, brightness)
 
       brightness when is_integer(brightness) ->
-        Internal.brighten(image.extension, image.bytes, brightness)
+        Internal.brighten(image.bytes, image.extension, brightness)
 
       _ ->
         {:error, "brightness must be an integer"}
@@ -109,5 +109,5 @@ defmodule Thumbelina do
   end
 
   @spec greyscale(Image.t()) :: result()
-  def greyscale(%Image{} = image), do: Internal.greyscale(image.extension, image.bytes)
+  def greyscale(%Image{} = image), do: Internal.greyscale(image.bytes, image.extension)
 end
