@@ -4,7 +4,6 @@ use crate::operation::Operation;
 use crate::worker;
 
 use rayon::prelude::*;
-use rustler::env::OwnedEnv;
 use rustler::types::LocalPid;
 use rustler::{Atom, Binary, Env, Error, NifResult};
 
@@ -21,25 +20,7 @@ pub mod atoms {
 // This is done to relinquish scheduler time to the caller in erts counting as full reduction op.
 // deliver result later on completion in the client's server process mailbox the reply will be delivered with
 // `{:ok, :"{operation}", image_bytes}`
-
-// provides two api flavors `cast` for fire and forget on a single large image `cast_all` for several.
-
-//  #[rustler::nif]
-// pub fn cast<'a>(
-//     pid: &LocalPid,
-//     bin: Binary<'a>,
-//     extension: &'a str,
-//     width: f32,
-//     height: f32,
-//     operation: Operation
-// ) -> NifResult<Atom> {
-//     let mut env = OwnedEnv::new();
-//     let data = "test".to_string();
-
-//     env.send_and_clear(pid, |env| data.encode_utf16());
-
-//     Ok(atoms::ok())
-// }
+// provides two api flavors `cast` for fire and forget on a single large image and `batch` for several on a dirty cpu.
 
 #[rustler::nif]
 pub fn cast<'a>(
@@ -51,9 +32,35 @@ pub fn cast<'a>(
     width: f32,
     height: f32,
 ) -> NifResult<Atom> {
-    worker::background_process(env, op, pid, width, height, extension, bin);
+    let buffer = bin.as_slice();
+    worker::background_process(env, op, pid, width, height, extension, buffer);
 
     Ok(atoms::ok())
+}
+
+#[rustler::nif(schedule = "DirtyCpu")]
+pub fn batch<'a>(
+    operation: Operation,
+    binaries: Vec<Binary<'a>>,
+    extension: &'a str,
+    width: f32,
+    height: f32,
+) -> NifResult<(Atom, Vec<Image>)> {
+    let images = binaries
+        .iter()
+        .map(|bin| bin.as_slice())
+        .collect::<Vec<&[u8]>>()
+        .into_par_iter()
+        .filter_map(|buf| {
+            let op = operation::perform(operation, width, height, extension, buf);
+            match op {
+                Ok(image) => Some(image),
+                Err(_) => None,
+            }
+        })
+        .collect();
+
+    Ok((atoms::ok(), images))
 }
 
 #[rustler::nif]
@@ -68,30 +75,6 @@ pub fn resize<'a>(
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
-}
-
-#[rustler::nif(schedule = "DirtyCpu")]
-pub fn resize_all<'a>(
-    binaries: Vec<Binary<'a>>,
-    extension: &'a str,
-    width: u32,
-    height: u32,
-) -> NifResult<(Atom, Vec<Image>)> {
-    let images = binaries
-        .iter()
-        .map(|bin| bin.as_slice())
-        .collect::<Vec<&[u8]>>()
-        .into_par_iter()
-        .filter_map(|i| {
-            let resized = operation::try_resize(extension, i, width, height);
-            match resized {
-                Ok((image, format)) => Image::build(image, extension, format).ok(),
-                Err(_err) => None,
-            }
-        })
-        .collect();
-
-    Ok((atoms::ok(), images))
 }
 
 #[rustler::nif]

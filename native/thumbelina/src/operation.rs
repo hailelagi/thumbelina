@@ -1,15 +1,14 @@
 use std::io;
 use std::io::ErrorKind::Unsupported;
 // use std::sync::Mutex;
-use crate::image::Direction;
+use crate::image::{Direction, Image};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageError, ImageFormat};
-use rustler::NifUnitEnum;
+use rustler::{error, NifUnitEnum};
 // use log::trace;
 
-/// Public enum representing the different image operations that can be performed.
-
+/// Public enum/atom representing the different image operations that can be performed.
 #[allow(clippy::non_snake_case)]
-#[derive(NifUnitEnum, Debug)]
+#[derive(NifUnitEnum, Debug, Copy, Clone)]
 pub enum Operation {
     Blur,
     Brighten,
@@ -19,6 +18,30 @@ pub enum Operation {
     Resize,
     Thumbnail,
     Rotate,
+}
+
+pub fn perform(
+    operation: Operation,
+    width: f32,
+    height: f32,
+    extension: &str,
+    buffer: &[u8],
+) -> Result<Image, error::Error> {
+    let transform = match operation {
+        Operation::Resize => try_resize(&extension, buffer, width as u32, height as u32),
+        Operation::Thumbnail => try_thumbnail(&extension, buffer, width as u32, height as u32),
+        Operation::FlipHorizontal => try_flip(&extension, buffer, Direction::Horizontal),
+        Operation::FlipVertical => try_flip(&extension, buffer, Direction::Vertical),
+        Operation::Rotate => try_rotate(&extension, buffer, width as i32),
+        Operation::Blur => try_blur(&extension, buffer, width as f32),
+        Operation::Brighten => try_brighten(&extension, buffer, width as i32),
+        Operation::Greyscale => try_greyscale(&extension, buffer),
+    };
+
+    match transform {
+        Ok((image, format)) => Image::build(image, &extension, format),
+        Err(_err) => Err(rustler::Error::BadArg),
+    }
 }
 
 /// Tries to resize the given image with the specified dimensions.

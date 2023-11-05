@@ -93,7 +93,7 @@ defmodule ThumbelinaTest do
       entries = Thumbelina.open_all!("./example/pokemon")
 
       entries = Enum.map(entries, fn {:ok, e} -> e.bytes end)
-      assert {:ok, entries} = Thumbelina.Internal.resize_all(entries, "png", 50, 50)
+      assert {:ok, entries} = Thumbelina.Internal.batch(:resize, entries, "png", 50.00, 50.00)
 
       assert length(entries) == 3
     end
@@ -112,7 +112,7 @@ defmodule ThumbelinaTest do
         50.0
       )
 
-      assert_receive %{__struct__: Thumbelina.Image, bytes: bytes}, 20_000
+      assert_receive {:ok, %{__struct__: Thumbelina.Image, bytes: bytes}}, 20_000
 
       assert image.bytes != bytes
     end

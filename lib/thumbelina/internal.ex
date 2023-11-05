@@ -32,8 +32,8 @@ defmodule Thumbelina.Internal do
   # def invert(_), do: error()
   # def unsharpen(_), do: error()
 
-  # Parallel Image Processing (Dirty CPU)
-  def resize_all(_, _, _, _), do: error()
+  # Batch Parallelised Image Processing (Dirty CPU)
+  def batch(_, _, _, _, _), do: error()
 
   defp error, do: :erlang.nif_error("image-rs is not available")
 end
