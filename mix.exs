@@ -18,6 +18,7 @@ defmodule Thumbelina.MixProject do
 
   def application do
     [
+      mod: {Thumbelina.Application, []},
       extra_applications: [:logger]
     ]
   end
