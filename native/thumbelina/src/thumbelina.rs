@@ -15,8 +15,11 @@ mod atoms {
 // within the managed tokio runtime address space, casting it to a `DynamicImage` performing an `Operation`
 // and replying back to the client process immediately with an :ok or `:noop`.
 // This is done to relinquish scheduler time to the caller in erts counting as full reduction op.
-// where in the client's server process mailbox the reply will be delivered with `{:ok, :"{operation}", image_bytes}`
-// provides two flavors `cast` for fire and forget on a single large image `cast_all` for several.
+// deliver result later on completion in the client's server process mailbox the reply will be delivered with 
+// `{:ok, :"{operation}", image_bytes}`
+
+// provides two api flavors `cast` for fire and forget on a single large image `cast_all` for several.
+
 //  #[rustler::nif]
 // pub fn cast<'a>(
 //     pid: &LocalPid,
