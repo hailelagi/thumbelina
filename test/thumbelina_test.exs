@@ -101,25 +101,20 @@ defmodule ThumbelinaTest do
 
   describe "async api" do
     test "it asynchronously schedules an image operation", %{image: image} do
-      # todo: an agent will not work because we need to :handle_info a message
-      # but okay as a stub until I figure out the thread scheduling
-      {:ok, pid} = Agent.start_link(fn -> %{} end)
+      # pid = start_supervised!(Thumbelina.Store)
 
-      res =
-        Thumbelina.Internal.cast(
-          :resize,
-          pid,
-          image.bytes,
-          image.extension,
-          image.width,
-          image.height
-        )
+      Thumbelina.Internal.cast(
+        :resize,
+        self(),
+        image.bytes,
+        image.extension,
+        50.0,
+        50.0
+      )
 
-      assert :ok == res
-      # resized_image = Agent.get(pid, fn state -> state end)
+      assert_receive %{__struct__: Thumbelina.Image, bytes: bytes}, 20_000
 
-      # assert_receive {:ok, :resize, _}, 20_000
-      # assert resized_image
+      assert image.bytes != bytes
     end
   end
 end

@@ -5,7 +5,7 @@ defmodule Thumbelina.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [Thumbelina.Server]
+    children = [Thumbelina.Store]
 
     Supervisor.start_link(children, strategy: :one_for_one)
   end

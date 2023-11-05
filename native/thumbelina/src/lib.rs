@@ -1,10 +1,10 @@
 use rustler::{Env, Term};
 
 pub mod image;
-pub mod processor;
 pub mod operation;
-pub mod thumbelina;
 pub mod task;
+pub mod thumbelina;
+pub mod worker;
 
 fn load(env: Env, _: Term) -> bool {
     rustler::resource!(image::Image, env);

@@ -1,14 +1,16 @@
 use crate::image::{Direction, Image};
 use crate::operation;
 use crate::operation::Operation;
+use crate::worker;
 
 use rayon::prelude::*;
 use rustler::env::OwnedEnv;
 use rustler::types::LocalPid;
-use rustler::{Atom, Binary, Error, NifResult};
+use rustler::{Atom, Binary, Env, Error, NifResult};
 
-mod atoms {
-    rustler::atoms! {ok, noop, error, png, jpeg, svg}
+pub mod atoms {
+    rustler::atoms! {ok, noop, error, png, jpeg, svg, resize, thumbnail,
+    flip_horizontal, flip_vertical, rotate, blur, brighten, greyscale}
 }
 
 // TODO: provide opt-in time outs and cancellations
@@ -17,7 +19,7 @@ mod atoms {
 // within the managed tokio runtime address space, casting it to a `DynamicImage` performing an `Operation`
 // and replying back to the client process immediately with an :ok or `:noop`.
 // This is done to relinquish scheduler time to the caller in erts counting as full reduction op.
-// deliver result later on completion in the client's server process mailbox the reply will be delivered with 
+// deliver result later on completion in the client's server process mailbox the reply will be delivered with
 // `{:ok, :"{operation}", image_bytes}`
 
 // provides two api flavors `cast` for fire and forget on a single large image `cast_all` for several.
@@ -39,20 +41,20 @@ mod atoms {
 //     Ok(atoms::ok())
 // }
 
-
- #[rustler::nif]
+#[rustler::nif]
 pub fn cast<'a>(
+    env: Env<'a>,
     op: Operation,
     pid: LocalPid,
     bin: Binary<'a>,
     extension: &'a str,
-    width: i32,
-    height: i32,
+    width: f32,
+    height: f32,
 ) -> NifResult<Atom> {
+    worker::background_process(env, op, pid, width, height, extension, bin);
 
     Ok(atoms::ok())
 }
-
 
 #[rustler::nif]
 pub fn resize<'a>(
