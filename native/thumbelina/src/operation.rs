@@ -1,13 +1,15 @@
 use std::io;
 use std::io::ErrorKind::Unsupported;
-use std::sync::Mutex;
-use image::{imageops::FilterType::Nearest, DynamicImage, ImageFormat, ImageError};
-use rustler::{NifUnitEnum, LocalPid};
+// use std::sync::Mutex;
 use crate::image::Direction;
+use image::{imageops::FilterType::Nearest, DynamicImage, ImageError, ImageFormat};
+use rustler::NifUnitEnum;
 // use log::trace;
 
 /// Public enum representing the different image operations that can be performed.
-#[derive(NifUnitEnum)]
+
+#[allow(clippy::non_snake_case)]
+#[derive(NifUnitEnum, Debug)]
 pub enum Operation {
     Blur,
     Brighten,
@@ -34,7 +36,6 @@ pub fn try_resize<'a>(
 
     Ok((img, format))
 }
-
 
 /// Tries to create a thumbnail of the given image with the specified dimensions.
 /// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.thumbnail
@@ -135,7 +136,6 @@ pub fn try_greyscale<'a>(
     Ok((img, format))
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -172,5 +172,4 @@ mod tests {
         assert_eq!(format, ImageFormat::Png);
         assert_ne!(img.as_bytes(), buffer);
     }
-    
 }

@@ -1,9 +1,11 @@
 use crate::image::{Direction, Image};
 use crate::operation;
+use crate::operation::Operation;
+
 use rayon::prelude::*;
 use rustler::env::OwnedEnv;
 use rustler::types::LocalPid;
-use rustler::{Atom, Binary, Encoder, Error, NifResult};
+use rustler::{Atom, Binary, Error, NifResult};
 
 mod atoms {
     rustler::atoms! {ok, noop, error, png, jpeg, svg}
@@ -37,16 +39,20 @@ mod atoms {
 //     Ok(atoms::ok())
 // }
 
-//  #[rustler::nif]
-// pub fn cast_all<'a>(
-//     env: Env,
-//     binaries: Vec<Binary<'a>>,
-//     extension: &'a str,
-//     width: f32,
-//     height: f32,
-//     pid: LocalPid,
-//     operation: Operation
-// ) ->
+
+ #[rustler::nif]
+pub fn cast<'a>(
+    op: Operation,
+    pid: LocalPid,
+    bin: Binary<'a>,
+    extension: &'a str,
+    width: i32,
+    height: i32,
+) -> NifResult<Atom> {
+
+    Ok(atoms::ok())
+}
+
 
 #[rustler::nif]
 pub fn resize<'a>(

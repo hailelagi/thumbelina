@@ -14,8 +14,7 @@ fn load(env: Env, _: Term) -> bool {
 rustler::init!(
     "Elixir.Thumbelina.Internal",
     [
-        // thumbelina::server,
-        // thumbelina::cast,
+        thumbelina::cast,
         thumbelina::blur,
         thumbelina::brighten,
         thumbelina::flip_horizontal,
