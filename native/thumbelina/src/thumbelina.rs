@@ -5,7 +5,7 @@ use crate::worker;
 
 use rayon::prelude::*;
 use rustler::types::LocalPid;
-use rustler::{Atom, Binary, Env, Error, NifResult};
+use rustler::{Atom, Binary, Error, NifResult};
 
 pub mod atoms {
     rustler::atoms! {ok, noop, error, png, jpeg, svg, resize, thumbnail,
@@ -21,10 +21,8 @@ pub mod atoms {
 // deliver result later on completion in the client's server process mailbox the reply will be delivered with
 // `{:ok, :"{operation}", image_bytes}`
 // provides two api flavors `cast` for fire and forget on a single large image and `batch` for several on a dirty cpu.
-
 #[rustler::nif]
 pub fn cast<'a>(
-    env: Env<'a>,
     op: Operation,
     pid: LocalPid,
     bin: Binary<'a>,
@@ -33,7 +31,8 @@ pub fn cast<'a>(
     height: f32,
 ) -> NifResult<Atom> {
     let buffer = bin.as_slice();
-    worker::background_process(env, op, pid, width, height, extension, buffer);
+
+    worker::background_process(op, pid, width, height, extension, buffer);
 
     Ok(atoms::ok())
 }
@@ -52,7 +51,7 @@ pub fn batch<'a>(
         .collect::<Vec<&[u8]>>()
         .into_par_iter()
         .filter_map(|buf| {
-            let op = operation::perform(operation, width, height, extension, buf);
+            let op = operation::perform(operation, width, height, extension.to_string(), buf);
             match op {
                 Ok(image) => Some(image),
                 Err(_) => None,

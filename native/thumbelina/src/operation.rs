@@ -24,7 +24,7 @@ pub fn perform(
     operation: Operation,
     width: f32,
     height: f32,
-    extension: &str,
+    extension: String,
     buffer: &[u8],
 ) -> Result<Image, error::Error> {
     let transform = match operation {

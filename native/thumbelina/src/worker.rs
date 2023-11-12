@@ -1,8 +1,12 @@
 use crate::image::Image;
 use crate::operation;
 use crate::operation::Operation;
+use crate::task;
 use crate::thumbelina;
-use rustler::{Atom, Encoder, LocalPid, NifTuple};
+
+use rustler::{Atom, Encoder, LocalPid, NifTuple, OwnedEnv};
+
+// use tokio::sync::oneshot;
 
 // todo: weird naming on boundary
 #[derive(Debug, NifTuple)]
@@ -19,7 +23,6 @@ pub struct Failure {
 }
 
 pub fn background_process(
-    env: rustler::Env,
     operation: Operation,
     pid: LocalPid,
     width: f32,
@@ -27,26 +30,32 @@ pub fn background_process(
     extension: &str,
     buffer: &[u8],
 ) {
-    // initialise future
-    let result = operation::perform(operation, width, height, extension, buffer);
+    // let (tx, rx) = oneshot::channel();
+    let mut env = OwnedEnv::new();
 
-    // return result after awaiting/joining future handle
-    match result {
-        Ok(image) => env.send(
-            &pid,
-            Success {
-                op: thumbelina::atoms::ok(),
-                result: image,
-            }
-            .encode(env),
-        ),
-        Err(_err) => env.send(
-            &pid,
-            Failure {
-                op: thumbelina::atoms::noop(),
-                reason: String::from("operation could not complete"),
-            }
-            .encode(env),
-        ),
-    };
+    // TODO: BAD BAD - make rust compiler happy first, slow but work
+    let extension = extension.to_owned();
+    let buffer = buffer.to_owned();
+
+    task::spawn(async move {
+        let result = operation::perform(operation, width, height, extension, &buffer);
+
+        match result {
+            Ok(image) => env.send_and_clear(&pid, move |env| {
+                Success {
+                    op: thumbelina::atoms::ok(),
+                    result: image,
+                }
+                .encode(env)
+            }),
+            Err(_err) => env.send_and_clear(&pid, move |env| {
+                Failure {
+                    op: thumbelina::atoms::noop(),
+                    // todo: error handling messages
+                    reason: String::from("operation could not complete"),
+                }
+                .encode(env)
+            }),
+        }
+    });
 }

@@ -110,7 +110,9 @@ defmodule ThumbelinaTest do
         50.0
       )
 
-      assert_receive {:ok, %{__struct__: Thumbelina.Image, bytes: bytes}}, 2000
+      # rough guesstimate benchmark is it processes ~ 1GiG per/sec on a macbook air m1
+      # the sample image should process in less than 50ms
+      assert_receive {:ok, %{__struct__: Thumbelina.Image, bytes: bytes}}, 100
 
       assert image.bytes != bytes
     end

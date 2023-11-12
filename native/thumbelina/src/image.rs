@@ -2,7 +2,7 @@ use image::{DynamicImage, ImageFormat};
 use rustler::{Error, NifStruct};
 use std::io::Cursor;
 
-// TODO: maybe remove this duplication
+// TODO(issue #4): maybe remove this duplication
 // a Vec<u8> cannot be serialised to a Binary<u8> as it's an erlang owned term
 // but it might be possible to impl TryInto
 // or impl para_iter for the Erlang type in a safe way
