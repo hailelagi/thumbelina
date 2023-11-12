@@ -101,8 +101,6 @@ defmodule ThumbelinaTest do
 
   describe "async api" do
     test "it asynchronously schedules an image operation", %{image: image} do
-      # pid = start_supervised!(Thumbelina.Store)
-
       Thumbelina.Internal.cast(
         :resize,
         self(),
@@ -112,7 +110,7 @@ defmodule ThumbelinaTest do
         50.0
       )
 
-      assert_receive {:ok, %{__struct__: Thumbelina.Image, bytes: bytes}}, 20_000
+      assert_receive {:ok, %{__struct__: Thumbelina.Image, bytes: bytes}}, 2000
 
       assert image.bytes != bytes
     end

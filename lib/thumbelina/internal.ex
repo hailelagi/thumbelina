@@ -4,16 +4,16 @@ defmodule Thumbelina.Internal do
   Handles FFI Initialisation, scheduling and encoding/decoding to/from image-rs.
   see: https://docs.rs/image/latest/image/
 
-  Function APIs ending with `_all` are intended for batching calls of image bytes to
+  `batch` api intended for batching calls of image bytes to
   be transformed on the scheduler's dirty cpu thread.
 
-  Function APIs ending with `_cast` are serialised in a Threaded NIF that
+  `cast` are serialised in a Threaded NIF that
   asynchronously sends a message back to a registered pid caller process.
   """
   use Rustler, otp_app: :thumbelina, crate: "thumbelina"
 
   # Asynchronous Image Processing
-  @spec cast(atom(), pid(), binary(), String.t(), pos_integer(), pos_integer()) :: :ok | :noop
+  @spec cast(atom(), pid(), binary(), String.t(), float(), float()) :: :ok
   def cast(_, _, _, _, _, _), do: error()
 
   # Sync Image Processing

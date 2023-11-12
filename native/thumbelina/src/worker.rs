@@ -27,9 +27,10 @@ pub fn background_process(
     extension: &str,
     buffer: &[u8],
 ) {
+    // initialise future
     let result = operation::perform(operation, width, height, extension, buffer);
 
-    // return result after awaiting future
+    // return result after awaiting/joining future handle
     match result {
         Ok(image) => env.send(
             &pid,
