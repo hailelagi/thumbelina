@@ -12,8 +12,6 @@ static TOKIO: Lazy<Runtime> = Lazy::new(|| {
         // must be <= elixir/erlang side - System.schedulers_online()
         // pass in from client as `TOKIO_WORKER_THREADS`
         .worker_threads(4)
-        .enable_time()
-        .enable_io()
         .build()
         .expect("Thumbelina.Internal - no runtime!")
 });
