@@ -5,6 +5,38 @@
 Rust backed erlang NIF for image processing. This is a fun idea/experiment combining the incredible I/O throughput and
 concurrency features of the BEAM and the memory safety of rust. 
 
+# Performance
+This is an incredibly.. not at all well behaved NIF at the moment, especially with the basic `synchronous` api which after some basic benchmarks turns out to take about ~2seconds to process an ~2GiG jpeg stalling work stealing BEAM scheduling. Tldr; this is poorly optimised right now.
+
+```
+Operating System: macOS
+CPU Information: Apple M1
+Number of Available Cores: 8
+Available memory: 8 GB
+Elixir 1.14.4
+Erlang 25.3
+
+Benchmark suite executing with the following configuration:
+warmup: 2 s
+time: 10 s
+memory time: 2 s
+reduction time: 0 ns
+parallel: 1
+inputs: none specified
+Estimated total run time: 28 s
+
+Benchmarking async resize 2GiG ...
+Benchmarking sync resize 2GiG ...
+
+Name                        ips        average  deviation         median         99th %
+async resize 2GiG        351.73      0.00284 s  ±1241.40%      0.00035 s       0.0410 s
+sync resize 2GiG           0.48         2.06 s     ±5.65%         2.07 s         2.18 s
+
+Comparison: 
+async resize 2GiG        351.73
+sync resize 2GiG           0.48 - 726.30x slower +2.06 s
+```
+
 ## Design
 <design_diagram.png>
 

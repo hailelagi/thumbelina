@@ -39,3 +39,5 @@ thumbelina-*.tar
 .fleet
 
 .iex.exs
+
+example/mid-image.jpeg
