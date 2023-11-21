@@ -1,5 +1,6 @@
 use once_cell::sync::Lazy;
 use std::future::Future;
+use std::env;
 use tokio::runtime::{Builder, Runtime};
 use tokio::task::JoinHandle;
 
@@ -8,10 +9,8 @@ use tokio::task::JoinHandle;
 // but rather lazily on the first call to `spawn` whenever the first NIF is called.
 static TOKIO: Lazy<Runtime> = Lazy::new(|| {
     Builder::new_multi_thread()
-        // todo: determine empirically how many threads are appropriate
-        // must be <= elixir/erlang side - System.schedulers_online()
-        // pass in from client as `TOKIO_WORKER_THREADS`
-        .worker_threads(4)
+        // todo: log warning <=  System.schedulers_online() / 2
+        .worker_threads(set_workers())
         .build()
         .expect("Thumbelina.Internal - no runtime!")
 });
@@ -23,4 +22,13 @@ where
     T::Output: Send + 'static,
 {
     TOKIO.spawn(task)
+}
+
+fn set_workers() -> usize {
+    match env::var("TOKIO_WORKER_THREADS") {
+        Ok(val) => val.parse().unwrap(),
+        Err(_e) => 
+        // TODO: LOG AND WARN USING DEFAULT ERROR
+        2,
+    }
 }

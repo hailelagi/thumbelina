@@ -25,7 +25,7 @@ defmodule Thumbelina.MixProject do
 
   defp deps do
     [
-      {:rustler, "~> 0.24.0"},
+      {:rustler, "~> 0.24.0", optional: true},
       {:rustler_precompiled, "~> 0.7"},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},

@@ -10,7 +10,14 @@ defmodule Thumbelina.Internal do
   `cast` are serialised in a Threaded NIF that
   asynchronously sends a message back to a registered pid caller process.
   """
-  use Rustler, otp_app: :thumbelina, crate: "thumbelina"
+  version = Mix.Project.config()[:version]
+
+  use RustlerPrecompiled,
+    otp_app: :thumbelina,
+    crate: "thumbelina",
+    base_url: "https://github.com/hailelagi/thumbelina/releases/download/v#{version}",
+    force_build: System.get_env("RUSTLER_PRECOMPILATION_BUILD") in ["1", "true"],
+    version: version
 
   # Asynchronous Image Processing
   @spec cast(atom(), pid(), binary(), String.t(), float(), float()) :: :ok
