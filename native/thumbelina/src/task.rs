@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
-use std::future::Future;
 use std::env;
+use std::future::Future;
 use tokio::runtime::{Builder, Runtime};
 use tokio::task::JoinHandle;
 
@@ -27,8 +27,10 @@ where
 fn set_workers() -> usize {
     match env::var("TOKIO_WORKER_THREADS") {
         Ok(val) => val.parse().unwrap(),
-        Err(_e) => 
+        Err(_e) =>
         // TODO: LOG AND WARN USING DEFAULT ERROR
-        2,
+        {
+            2
+        }
     }
 }
