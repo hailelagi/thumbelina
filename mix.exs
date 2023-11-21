@@ -2,7 +2,7 @@ defmodule Thumbelina.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/hailelagi/thumbelina"
-  @version "0.1.0"
+  @version "0.0.1"
 
   def project do
     [
@@ -12,7 +12,15 @@ defmodule Thumbelina.MixProject do
       name: "Thumbelina",
       source_url: @source_url,
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      package: [
+        licenses: ["MIT"],
+        description:
+          "Image processing and compression in the BEAM virtual machine via rust bindings.",
+        maintainers: ["hailelagi"],
+        licenses: ["MIT"],
+        links: %{"GitHub" => @source_url}
+      ]
     ]
   end
 
