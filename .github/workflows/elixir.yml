@@ -6,6 +6,7 @@ on:
     branches: [ "main" ]
 env:
   MIX_ENV: test
+  RUSTLER_PRECOMPILATION_BUILD: false
 
 permissions:
   contents: read
