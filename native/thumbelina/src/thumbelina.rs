@@ -63,6 +63,20 @@ pub fn batch<'a>(
 }
 
 #[rustler::nif]
+pub fn block_compress<'a>(bin: Binary<'a>, _source: String) -> NifResult<(Atom, Image)> {
+    let buffer = bin.as_slice();
+
+    operation::block_compress(buffer)?
+}
+
+#[rustler::nif]
+pub fn stream_compress<'a>(bin: Binary<'a>, _source: String) -> NifResult<(Atom, Image)> {
+    let buffer = bin.as_slice();
+
+    operation::stream_compress(buffer)?
+}
+
+#[rustler::nif]
 pub fn resize<'a>(
     bin: Binary<'a>,
     extension: &'a str,
@@ -70,7 +84,7 @@ pub fn resize<'a>(
     height: u32,
 ) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match operation::try_resize(extension, buffer, width, height) {
+    match operation::resize(extension, buffer, width, height) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -84,7 +98,7 @@ pub fn thumbnail<'a>(
     nheight: u32,
 ) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match operation::try_thumbnail(extension, buffer, nwidth, nheight) {
+    match operation::thumbnail(extension, buffer, nwidth, nheight) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -93,7 +107,7 @@ pub fn thumbnail<'a>(
 #[rustler::nif]
 pub fn flip_horizontal<'a>(bin: Binary<'a>, extension: &'a str) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match operation::try_flip(extension, buffer, Direction::Horizontal) {
+    match operation::flip(extension, buffer, Direction::Horizontal) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -102,7 +116,7 @@ pub fn flip_horizontal<'a>(bin: Binary<'a>, extension: &'a str) -> NifResult<(At
 #[rustler::nif]
 pub fn flip_vertical<'a>(bin: Binary<'a>, extension: &'a str) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match operation::try_flip(extension, buffer, Direction::Vertical) {
+    match operation::flip(extension, buffer, Direction::Vertical) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -111,7 +125,7 @@ pub fn flip_vertical<'a>(bin: Binary<'a>, extension: &'a str) -> NifResult<(Atom
 #[rustler::nif]
 pub fn rotate<'a>(bin: Binary<'a>, extension: &'a str, angle: i32) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match operation::try_rotate(extension, buffer, angle) {
+    match operation::rotate(extension, buffer, angle) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -120,7 +134,7 @@ pub fn rotate<'a>(bin: Binary<'a>, extension: &'a str, angle: i32) -> NifResult<
 #[rustler::nif]
 pub fn blur<'a>(bin: Binary<'a>, extension: &'a str, sigma: f32) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match operation::try_blur(extension, buffer, sigma) {
+    match operation::blur(extension, buffer, sigma) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -133,7 +147,7 @@ pub fn brighten<'a>(
     brightness: i32,
 ) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match operation::try_brighten(extension, buffer, brightness) {
+    match operation::brighten(extension, buffer, brightness) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }
@@ -142,7 +156,7 @@ pub fn brighten<'a>(
 #[rustler::nif]
 pub fn greyscale<'a>(bin: Binary<'a>, extension: &'a str) -> NifResult<(Atom, Image)> {
     let buffer = bin.as_slice();
-    match operation::try_greyscale(extension, buffer) {
+    match operation::greyscale(extension, buffer) {
         Ok((image, format)) => Ok((atoms::ok(), Image::build(image, extension, format)?)),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),
     }

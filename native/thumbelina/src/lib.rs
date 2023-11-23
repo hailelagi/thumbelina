@@ -24,6 +24,9 @@ rustler::init!(
         thumbelina::resize,
         thumbelina::thumbnail,
         thumbelina::rotate,
+        thumbelina::block_compress,
+        thumbelina::stream_compress,
+        // thumbelina::decompress
         //   thumbelina::crop,
     ],
     load = load

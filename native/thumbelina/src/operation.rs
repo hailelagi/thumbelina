@@ -4,6 +4,8 @@ use std::io::ErrorKind::Unsupported;
 use crate::image::{Direction, Image};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageError, ImageFormat};
 use rustler::{error, NifUnitEnum};
+
+use snap::read::FrameEncoder;
 // use log::trace;
 
 /// Public enum/atom representing the different image operations that can be performed.
@@ -28,14 +30,14 @@ pub fn perform(
     buffer: &[u8],
 ) -> Result<Image, error::Error> {
     let transform = match operation {
-        Operation::Resize => try_resize(&extension, buffer, width as u32, height as u32),
-        Operation::Thumbnail => try_thumbnail(&extension, buffer, width as u32, height as u32),
-        Operation::FlipHorizontal => try_flip(&extension, buffer, Direction::Horizontal),
-        Operation::FlipVertical => try_flip(&extension, buffer, Direction::Vertical),
-        Operation::Rotate => try_rotate(&extension, buffer, width as i32),
-        Operation::Blur => try_blur(&extension, buffer, width as f32),
-        Operation::Brighten => try_brighten(&extension, buffer, width as i32),
-        Operation::Greyscale => try_greyscale(&extension, buffer),
+        Operation::Resize => resize(&extension, buffer, width as u32, height as u32),
+        Operation::Thumbnail => thumbnail(&extension, buffer, width as u32, height as u32),
+        Operation::FlipHorizontal => flip(&extension, buffer, Direction::Horizontal),
+        Operation::FlipVertical => flip(&extension, buffer, Direction::Vertical),
+        Operation::Rotate => rotate(&extension, buffer, width as i32),
+        Operation::Blur => blur(&extension, buffer, width as f32),
+        Operation::Brighten => brighten(&extension, buffer, width as i32),
+        Operation::Greyscale => greyscale(&extension, buffer),
     };
 
     match transform {
@@ -46,7 +48,7 @@ pub fn perform(
 
 /// Tries to resize the given image with the specified dimensions.
 /// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.resize
-pub fn try_resize<'a>(
+pub fn resize<'a>(
     extension: &'a str,
     buffer: &'a [u8],
     width: u32,
@@ -62,7 +64,7 @@ pub fn try_resize<'a>(
 
 /// Tries to create a thumbnail of the given image with the specified dimensions.
 /// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.thumbnail
-pub fn try_thumbnail<'a>(
+pub fn thumbnail<'a>(
     extension: &'a str,
     buffer: &'a [u8],
     nwidth: u32,
@@ -79,7 +81,7 @@ pub fn try_thumbnail<'a>(
 /// Tries to flip the given image in the specified direction.
 /// either veritcal or horizontal.
 /// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.flipv
-pub fn try_flip<'a>(
+pub fn flip<'a>(
     extension: &'a str,
     buffer: &'a [u8],
     direction: Direction,
@@ -97,7 +99,7 @@ pub fn try_flip<'a>(
 
 /// Tries to rotate the given image by the specified angle, 90, 180, or 270.
 /// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.rotate90
-pub fn try_rotate<'a>(
+pub fn rotate<'a>(
     extension: &'a str,
     buffer: &'a [u8],
     angle: i32,
@@ -117,7 +119,7 @@ pub fn try_rotate<'a>(
 
 /// Tries to blur the given image with the specified sigma value.
 /// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.blur
-pub fn try_blur<'a>(
+pub fn blur<'a>(
     extension: &'a str,
     buffer: &'a [u8],
     sigma: f32,
@@ -132,7 +134,7 @@ pub fn try_blur<'a>(
 
 /// Tries to brighten the given image with the specified value.
 /// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.brighten
-pub fn try_brighten<'a>(
+pub fn brighten<'a>(
     extension: &'a str,
     buffer: &'a [u8],
     value: i32,
@@ -147,7 +149,7 @@ pub fn try_brighten<'a>(
 
 /// Tries to convert the given image to greyscale.
 /// https://docs.rs/image/latest/image/enum.DynamicImage.html#method.grayscale
-pub fn try_greyscale<'a>(
+pub fn greyscale<'a>(
     extension: &'a str,
     buffer: &'a [u8],
 ) -> Result<(DynamicImage, ImageFormat), ImageError> {
@@ -159,39 +161,43 @@ pub fn try_greyscale<'a>(
     Ok((img, format))
 }
 
+pub fn compress<'a>(buffer: &'a [u8]) {
+
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::fs;
 
     #[test]
-    fn test_try_rotate() {
+    fn test_rotate() {
         let buffer = fs::read("../../example/abra.png").unwrap().clone();
-        let (img, format) = try_rotate("png", &buffer, 90).unwrap();
+        let (img, format) = rotate("png", &buffer, 90).unwrap();
         assert_eq!(format, ImageFormat::Png);
         assert_ne!(img.as_bytes(), buffer);
     }
 
     #[test]
-    fn test_try_blur() {
+    fn test_blur() {
         let buffer = fs::read("../../example/abra.png").unwrap();
-        let (img, format) = try_blur("png", &buffer, 1.0).unwrap();
+        let (img, format) = blur("png", &buffer, 1.0).unwrap();
         assert_eq!(format, ImageFormat::Png);
         assert_ne!(img.as_bytes(), buffer);
     }
 
     #[test]
-    fn test_try_brighten() {
+    fn test_brighten() {
         let buffer = fs::read("../../example/abra.png").unwrap().clone();
-        let (img, format) = try_brighten("png", &buffer, 10).unwrap();
+        let (img, format) = brighten("png", &buffer, 10).unwrap();
         assert_eq!(format, ImageFormat::Png);
         assert_ne!(img.as_bytes(), buffer);
     }
 
     #[test]
-    fn test_try_greyscale() {
+    fn test_greyscale() {
         let buffer = fs::read("../../example/abra.png").unwrap().clone();
-        let (img, format) = try_greyscale("png", &buffer).unwrap();
+        let (img, format) = greyscale("png", &buffer).unwrap();
         assert_eq!(format, ImageFormat::Png);
         assert_ne!(img.as_bytes(), buffer);
     }
