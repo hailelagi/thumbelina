@@ -41,3 +41,5 @@ thumbelina-*.tar
 .iex.exs
 
 example/mid-image.jpeg
+thumbelina.code-workspace
+.envrc
