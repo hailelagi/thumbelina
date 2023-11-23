@@ -6,7 +6,7 @@ on:
     branches: [ "main" ]
 env:
   MIX_ENV: test
-  RUSTLER_PRECOMPILATION_BUILD: false
+  SKIP_RUSTLER_PRECOMPILATION_BUILD: true
 
 permissions:
   contents: read
@@ -15,9 +15,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     name: Test on OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
-    env:
-      RUSTLER_PRECOMPILATION_BUILD: false
-
     strategy:
       matrix:
         otp: ['25.0.4']    
