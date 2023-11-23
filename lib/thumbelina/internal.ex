@@ -16,7 +16,7 @@ defmodule Thumbelina.Internal do
     otp_app: :thumbelina,
     crate: "thumbelina",
     base_url: "https://github.com/hailelagi/thumbelina/releases/download/v#{version}",
-    force_build: System.get_env("RUSTLER_PRECOMPILATION_BUILD") in ["1", "true"],
+    force_build: System.get_env("SKIP_RUSTLER_PRECOMPILATION_BUILD") in ["1", "true", true],
     nif_versions: ["2.16"],
     version: version
 
