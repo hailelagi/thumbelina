@@ -16,8 +16,8 @@ defmodule Thumbelina.Internal do
     otp_app: :thumbelina,
     crate: "thumbelina",
     base_url: "https://github.com/hailelagi/thumbelina/releases/download/v#{version}",
-    # force_build: System.get_env("RUSTLER_PRECOMPILATION_BUILD") in ["1", "true"],
-    force_build: true,
+    force_build: System.get_env("RUSTLER_PRECOMPILATION_BUILD") in ["1", "true"],
+    nif_versions: ["2.16"],
     version: version
 
   # Asynchronous Image Processing

@@ -7,6 +7,9 @@ on:
     tags:
       - '*'
 
+env:
+  RUSTLER_PRECOMPILATION_BUILD: false
+
 jobs:
   build_release:
     name: NIF ${{ matrix.nif }} - ${{ matrix.job.target }} (${{ matrix.job.os }})
