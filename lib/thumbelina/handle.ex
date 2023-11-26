@@ -10,6 +10,5 @@ defmodule Thumbelina.Handle do
     stream the current bytes out to the Writer interface
   """
 
-  defstruct [resource: nil, eference: nil]
-
+  defstruct resource: nil, eference: nil
 end

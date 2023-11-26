@@ -217,7 +217,7 @@ mod tests {
     #[test]
     fn test_block_compress_and_decompress() {
         let buffer = fs::read("../../example/abra.png").unwrap().clone();
-        
+
         let compressed = block_compress(&buffer).expect("it compresses an image bytes");
         assert_ne!(buffer, compressed);
 

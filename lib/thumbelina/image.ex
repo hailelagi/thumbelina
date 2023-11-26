@@ -14,7 +14,15 @@ defmodule Thumbelina.Image do
           compressed: boolean()
         }
 
-  defstruct [:extension, :path, :source, bytes: <<0::255>>, height: 0, width: 0, compressed: false]
+  defstruct [
+    :extension,
+    :path,
+    :source,
+    bytes: <<0::255>>,
+    height: 0,
+    width: 0,
+    compressed: false
+  ]
 
   def new(ext, path, bytes, src) do
     if supported_extension?(ext) do

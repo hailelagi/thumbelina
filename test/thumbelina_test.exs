@@ -101,7 +101,9 @@ defmodule ThumbelinaTest do
 
       File.rm!("./example/compressed.gz")
 
-      assert {:ok, decompressed_image} = Thumbelina.Internal.block_decompress(compressed_image.bytes)
+      assert {:ok, decompressed_image} =
+               Thumbelina.Internal.block_decompress(compressed_image.bytes)
+
       refute decompressed_image.compressed
 
       File.write!("./example/decompressed.png", decompressed_image.bytes)
