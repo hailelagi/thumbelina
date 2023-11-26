@@ -18,7 +18,12 @@ pub enum Operation {
     Greyscale,
     Resize,
     Thumbnail,
-    Rotate,
+    Rotate
+}
+
+pub enum StreamOperation {
+   Compress,
+   Decompress
 }
 
 pub fn perform(
@@ -37,6 +42,8 @@ pub fn perform(
         Operation::Blur => blur(&extension, buffer, width as f32),
         Operation::Brighten => brighten(&extension, buffer, width as i32),
         Operation::Greyscale => greyscale(&extension, buffer),
+        // Operation::Compress => stream_decompress(buffer),
+        // Operation::Decompress => stream_decompress(buffer),
     };
 
     match transform {
@@ -172,10 +179,15 @@ pub fn block_decompress<'a>(buffer: &'a [u8]) -> Result<Vec<u8>, snap::Error> {
     snap::raw::Decoder::new().decompress_vec(&buffer)
 }
 
-// TODO: Streaming api with network file handles
-// pub fn stream_compress<'a>(buffer: &'a [u8]) {
+pub fn stream_compress<'a>(buffer: &'a [u8]) -> Result<Vec<u8>, snap::Error> {
+    // TODO: snap::writer
+    snap::raw::Encoder::new().compress_vec(&buffer)
+}
 
-// }
+pub fn stream_decompress<'a>(buffer: &'a [u8]) -> Result<Vec<u8>, snap::Error> {
+    // TODO: snap:reader
+    snap::raw::Decoder::new().decompress_vec(&buffer)
+}
 
 #[cfg(test)]
 mod tests {

@@ -1,6 +1,6 @@
 use crate::image::Image;
 use crate::operation;
-use crate::operation::Operation;
+use crate::operation::{Operation, StreamOperation};
 use crate::task;
 use crate::thumbelina;
 
@@ -20,6 +20,37 @@ pub struct Success {
 pub struct Failure {
     pub op: Atom,
     pub reason: String,
+}
+
+pub fn background_stream(op: StreamOperation, pid: LocalPid, buffer: &[u8]) {
+    let mut env = OwnedEnv::new();
+    let buffer = buffer.to_owned();
+
+    // TODO: how to pause/continue during recv
+    task::spawn(async move {
+        let result = match op {
+            StreamOperation::Compress => operation::stream_compress(&buffer),
+            StreamOperation::Decompress => operation::stream_decompress(&buffer)
+        }
+ 
+        match result {
+            Ok(image) => env.send_and_clear(&pid, move |env| {
+                Success {
+                    op: thumbelina::atoms::ok(),
+                    result: image,
+                }
+                .encode(env)
+            }),
+            Err(_err) => env.send_and_clear(&pid, move |env| {
+                Failure {
+                    op: thumbelina::atoms::noop(),
+                    // todo: error handling messages
+                    reason: String::from("operation could not complete"),
+                }
+                .encode(env)
+            }),
+        }
+    });
 }
 
 pub fn background_process(
