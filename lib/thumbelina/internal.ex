@@ -35,8 +35,9 @@ defmodule Thumbelina.Internal do
   def brighten(_, _, _), do: error()
   def greyscale(_, _), do: error()
 
-  def block_compress(_, _), do: error()
-  def stream_compress(_, _), do: error()
+  def block_compress(_), do: error()
+  def block_decompress(_), do: error()
+  # def stream_compress(_, _), do: error()
 
   # def decompress(_, _), do: error()
 

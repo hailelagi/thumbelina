@@ -86,6 +86,27 @@ defmodule ThumbelinaTest do
 
       refute image.bytes == bright.bytes
     end
+
+    test "it compresses and decompresses an image", %{image: image} do
+      assert {:ok, compressed_image} = Thumbelina.Internal.block_compress(image.bytes)
+      assert compressed_image.compressed
+      refute compressed_image.bytes == image.bytes
+
+      File.write!("./example/compressed.gz", compressed_image.bytes)
+
+      original = File.stat!("./example/abra.png")
+      compressed = File.stat!("./example/compressed.gz")
+
+      assert original.size > compressed.size
+
+      File.rm!("./example/compressed.gz")
+
+      assert {:ok, decompressed_image} = Thumbelina.Internal.block_decompress(compressed_image.bytes)
+      refute decompressed_image.compressed
+
+      File.write!("./example/decompressed.png", decompressed_image.bytes)
+      File.rm!("./example/decompressed.png")
+    end
   end
 
   describe "parallel api" do

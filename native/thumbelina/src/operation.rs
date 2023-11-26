@@ -5,7 +5,6 @@ use crate::image::{Direction, Image};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageError, ImageFormat};
 use rustler::{error, NifUnitEnum};
 
-use snap::read::FrameEncoder;
 // use log::trace;
 
 /// Public enum/atom representing the different image operations that can be performed.
@@ -161,9 +160,22 @@ pub fn greyscale<'a>(
     Ok((img, format))
 }
 
-pub fn compress<'a>(buffer: &'a [u8]) {
-
+// Compress an entire known block of bytes into a compressed .gz format
+// NOTE: This requires reading the entire input into memory.
+pub fn block_compress<'a>(buffer: &'a [u8]) -> Result<Vec<u8>, snap::Error> {
+    snap::raw::Encoder::new().compress_vec(&buffer)
 }
+
+// Decompress an entire known block of bytes back into its native format
+// NOTE: This requires reading the entire input into memory.
+pub fn block_decompress<'a>(buffer: &'a [u8]) -> Result<Vec<u8>, snap::Error> {
+    snap::raw::Decoder::new().decompress_vec(&buffer)
+}
+
+// TODO: Streaming api with network file handles
+// pub fn stream_compress<'a>(buffer: &'a [u8]) {
+
+// }
 
 #[cfg(test)]
 mod tests {
@@ -200,5 +212,16 @@ mod tests {
         let (img, format) = greyscale("png", &buffer).unwrap();
         assert_eq!(format, ImageFormat::Png);
         assert_ne!(img.as_bytes(), buffer);
+    }
+
+    #[test]
+    fn test_block_compress_and_decompress() {
+        let buffer = fs::read("../../example/abra.png").unwrap().clone();
+        
+        let compressed = block_compress(&buffer).expect("it compresses an image bytes");
+        assert_ne!(buffer, compressed);
+
+        let decompressed = block_decompress(&compressed).expect("it decompresses an image bytes");
+        assert_eq!(buffer, decompressed);
     }
 }

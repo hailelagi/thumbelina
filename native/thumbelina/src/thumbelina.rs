@@ -62,19 +62,28 @@ pub fn batch<'a>(
     Ok((atoms::ok(), images))
 }
 
-#[rustler::nif]
-pub fn block_compress<'a>(bin: Binary<'a>, _source: String) -> NifResult<(Atom, Image)> {
-    let buffer = bin.as_slice();
-
-    operation::block_compress(buffer)?
+#[rustler::nif(schedule = "DirtyCpu")]
+pub fn block_compress<'a>(bin: Binary<'a>) -> NifResult<(Atom, Image)> {
+    match operation::block_compress(bin.as_slice()) {
+        Ok(buffer) => Ok((atoms::ok(), Image::new_raw(buffer))),
+        Err(err) => Err(Error::Term(Box::new(err.to_string()))),
+    }
 }
 
-#[rustler::nif]
-pub fn stream_compress<'a>(bin: Binary<'a>, _source: String) -> NifResult<(Atom, Image)> {
-    let buffer = bin.as_slice();
-
-    operation::stream_compress(buffer)?
+#[rustler::nif(schedule = "DirtyCpu")]
+pub fn block_decompress<'a>(bin: Vec<u8>) -> NifResult<(Atom, Image)> {
+    match operation::block_decompress(bin.as_slice()) {
+        Ok(buffer) => Ok((atoms::ok(), Image::from_compressed(buffer).expect("wtf"))),
+        Err(err) => Err(Error::Term(Box::new(err.to_string()))),
+    }
 }
+
+// #[rustler::nif]
+// pub fn stream_compress<'a>(bin: Binary<'a>, _source: String) -> NifResult<(Atom, Image)> {
+//     let buffer = bin.as_slice();
+
+//     operation::stream_compress(buffer)?
+// }
 
 #[rustler::nif]
 pub fn resize<'a>(
