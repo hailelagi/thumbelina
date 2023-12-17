@@ -1,6 +1,7 @@
+use image::io::Reader as ImageReader;
 use image::{DynamicImage, ImageFormat};
 use rustler::{Error, NifStruct};
-use std::io::Cursor;
+use std::io::{BufReader, Cursor};
 
 // TODO(issue #4): maybe remove this duplication
 // a Vec<u8> cannot be serialised to a Binary<u8> as it's an erlang owned term
@@ -13,7 +14,8 @@ pub struct Image {
     pub height: u32,
     pub width: u32,
     pub bytes: Vec<u8>, // Binary<u8>
-                        // todo pub path: String,
+    // todo pub path: String,
+    pub compressed: bool,
 }
 
 impl<'a> Image {
@@ -23,7 +25,31 @@ impl<'a> Image {
             height: image.height(),
             width: image.width(),
             bytes,
+            compressed: false,
         };
+    }
+
+    pub fn new_raw(bytes: Vec<u8>) -> Self {
+        return Image {
+            extension: String::from(".gz"),
+            height: 0,
+            width: 0,
+            bytes,
+            compressed: true,
+        };
+    }
+
+    pub fn from_compressed(bytes: Vec<u8>) -> Result<Image, image::ImageError> {
+        let reader = BufReader::new(Cursor::new(&bytes));
+        let image = ImageReader::new(reader).with_guessed_format()?.decode()?;
+
+        return Ok(Image {
+            extension: String::from(".gz"),
+            height: image.height(),
+            width: image.width(),
+            bytes,
+            compressed: false,
+        });
     }
 
     pub fn build(

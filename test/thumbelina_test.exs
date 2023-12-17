@@ -86,6 +86,26 @@ defmodule ThumbelinaTest do
 
       refute image.bytes == bright.bytes
     end
+
+    test "it compresses and decompresses an image", %{image: image} do
+      assert {:ok, compressed_image} = Thumbelina.Internal.block_compress(image.bytes)
+      assert compressed_image.compressed
+      refute compressed_image.bytes == image.bytes
+
+      File.write!("./example/compressed.gz", compressed_image.bytes)
+
+      original = File.stat!("./example/abra.png")
+      compressed = File.stat!("./example/compressed.gz")
+
+      assert original.size > compressed.size
+
+      File.rm!("./example/compressed.gz")
+
+      assert {:ok, decompressed_image} =
+               Thumbelina.Internal.block_decompress(compressed_image.bytes)
+
+      refute decompressed_image.compressed
+    end
   end
 
   describe "parallel api" do
@@ -116,5 +136,29 @@ defmodule ThumbelinaTest do
 
       assert image.bytes != bytes
     end
+  end
+
+  test "it compresses and decompresses an image in byte chunks", %{image: image} do
+    assert :ok = Thumbelina.Internal.stream_compress(self(), image.bytes)
+
+    assert_receive {:ok, %{__struct__: Thumbelina.Image} = compressed_image}, 1000
+
+    assert compressed_image.compressed
+    refute compressed_image.bytes == image.bytes
+
+    File.write!("./example/compressed.gz", compressed_image.bytes)
+
+    original = File.stat!("./example/abra.png")
+    compressed = File.stat!("./example/compressed.gz")
+
+    assert original.size > compressed.size
+
+    File.rm!("./example/compressed.gz")
+
+    assert :ok = Thumbelina.Internal.stream_decompress(self(), compressed_image.bytes)
+
+    assert_receive {:ok, %{__struct__: Thumbelina.Image} = decompressed_image}, 1000
+
+    refute decompressed_image.compressed
   end
 end
