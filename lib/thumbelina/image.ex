@@ -22,7 +22,6 @@ defmodule Thumbelina.Image do
     if supported_extension?(ext) do
       ext = String.replace_prefix(ext, ".", "")
       %Thumbelina.Image{extension: ext, bytes: bytes}
-
     else
       {:error, "invalid image format"}
     end
