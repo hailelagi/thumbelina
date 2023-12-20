@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 
 use crate::image::Image;
 use crate::operation;
-use crate::operation::{Operation, StreamOperation};
+use crate::operation::Operation;
 use crate::task;
 use crate::thumbelina;
 
@@ -19,13 +19,6 @@ pub struct Success {
 pub struct Failure {
     pub op: Atom,
     pub reason: String,
-}
-
-pub fn background_stream(_op: StreamOperation, _pid: LocalPid, _buffer: &[u8]) {
-    // let env = OwnedEnv::new();
-    // let buffer = buffer.to_owned();
-
-    // todo
 }
 
 pub fn background_process(
@@ -49,6 +42,9 @@ pub fn background_process(
             let buffer = Arc::clone(&buffered_lock);
             let buffer = match buffer.read() {
                 Ok(buffer) => buffer,
+                // try your best, this will likely propagate an error down the stack
+                // when doing the raw byte manipulation if it doesn't outright panic,
+                // there shouldn't be a reasonable situation where the read only lock gets poisoned
                 Err(err) => err.into_inner(),
             };
 

@@ -18,6 +18,10 @@ defmodule Thumbelina.Store do
     GenServer.cast({:global, __MODULE__}, {:resize, image, width, height})
   end
 
+  def thumbnail(image = %Image{}, width, height) do
+    GenServer.cast({:global, __MODULE__}, {:thumbnail, image, width, height})
+  end
+
   @impl true
   def init(_) do
     {:ok, []}
@@ -31,8 +35,25 @@ defmodule Thumbelina.Store do
   end
 
   @impl true
-  def handle_info(request, _state) do
-    Logger.info(inspect(request))
-    {:noreply, {:ok, request}}
+  def handle_cast({:thumbnail, image, width, height}, _) do
+    Internal.cast(:thumbnail, self(), image.bytes, image.extension, width, height)
+
+    {:noreply, :ok}
+  end
+
+  @impl true
+  def handle_info({:ok, image}, _state) do
+    # simply write the successful serialised image struct to STDOUT
+    # this would be some sort api consumer registered to pass along the pipeline
+    Logger.info(image)
+
+    {:noreply, {:ok, image}}
+  end
+
+  @impl true
+  def handle_info({:error, err}, _state) do
+    Logger.error(err)
+
+    {:noreply, {:ok, err}}
   end
 end

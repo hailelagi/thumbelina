@@ -7,13 +7,12 @@ defmodule Thumbelina do
 
   @type result :: {:ok, Image.t()} | {:error, String.t()}
 
-  @spec open(String.t(), map()) :: result()
-  def open(path, opts \\ %{}) do
+  @spec open(String.t()) :: result()
+  def open(path) do
     ext = Path.extname(path)
-    source = Map.get(opts, :source, :disk)
 
     with {:ok, binary} <- File.read(path),
-         %Image{} = image <- Image.new(ext, path, binary, source) do
+         %Image{} = image <- Image.new(ext, binary) do
       {:ok, image}
     else
       err -> err

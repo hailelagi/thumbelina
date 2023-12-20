@@ -22,7 +22,6 @@ defmodule ThumbelinaTest do
       assert Enum.all?(entries, fn e ->
                {:ok, img} = e
                assert is_binary(img.bytes)
-               assert img.source == :disk
              end)
     end
 
@@ -136,29 +135,5 @@ defmodule ThumbelinaTest do
 
       assert image.bytes != bytes
     end
-  end
-
-  test "it compresses and decompresses an image in byte chunks", %{image: image} do
-    assert :ok = Thumbelina.Internal.stream_compress(self(), image.bytes)
-
-    assert_receive {:ok, %{__struct__: Thumbelina.Image} = compressed_image}, 1000
-
-    assert compressed_image.compressed
-    refute compressed_image.bytes == image.bytes
-
-    File.write!("./example/compressed.gz", compressed_image.bytes)
-
-    original = File.stat!("./example/abra.png")
-    compressed = File.stat!("./example/compressed.gz")
-
-    assert original.size > compressed.size
-
-    File.rm!("./example/compressed.gz")
-
-    assert :ok = Thumbelina.Internal.stream_decompress(self(), compressed_image.bytes)
-
-    assert_receive {:ok, %{__struct__: Thumbelina.Image} = decompressed_image}, 1000
-
-    refute decompressed_image.compressed
   end
 end
