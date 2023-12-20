@@ -1,6 +1,6 @@
 use crate::image::{Direction, Image};
 use crate::operation;
-use crate::operation::Operation;
+use crate::operation::{Operation, StreamOperation};
 use crate::worker;
 
 use rayon::prelude::*;
@@ -25,14 +25,12 @@ pub mod atoms {
 pub fn cast<'a>(
     op: Operation,
     pid: LocalPid,
-    bin: Binary<'a>,
+    binary: Binary<'a>,
     extension: &'a str,
     width: f32,
     height: f32,
 ) -> NifResult<Atom> {
-    let buffer = bin.as_slice();
-
-    worker::background_process(op, pid, width, height, extension, buffer);
+    worker::background_process(op, pid, width, height, extension, binary);
 
     Ok(atoms::ok())
 }
@@ -63,15 +61,15 @@ pub fn batch<'a>(
 }
 
 #[rustler::nif]
-pub fn stream_compress<'a>(pid: LocalPid, bin: Binary<'a>) -> NifResult<(Atom, Image)> {
-    worker::background_stream(op, pid, buffer);
+pub fn stream_compress<'a>(pid: LocalPid, bin: Binary<'a>) -> NifResult<Atom> {
+    worker::background_stream(StreamOperation::Compress, pid, bin.as_slice());
 
     Ok(atoms::ok())
 }
 
 #[rustler::nif]
-pub fn stream_decompress<'a>(pid: LocalPid, bin: Vec<u8>) -> NifResult<(Atom, Image)> {
-    worker::background_stream(op, pid, buffer);
+pub fn stream_decompress<'a>(pid: LocalPid, bin: Vec<u8>) -> NifResult<Atom> {
+    worker::background_stream(StreamOperation::Decompress, pid, bin.as_slice());
 
     Ok(atoms::ok())
 }

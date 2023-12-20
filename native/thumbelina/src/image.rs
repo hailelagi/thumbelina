@@ -3,18 +3,15 @@ use image::{DynamicImage, ImageFormat};
 use rustler::{Error, NifStruct};
 use std::io::{BufReader, Cursor};
 
-// TODO(issue #4): maybe remove this duplication
-// a Vec<u8> cannot be serialised to a Binary<u8> as it's an erlang owned term
-// but it might be possible to impl TryInto
-// or impl para_iter for the Erlang type in a safe way
+// A freshly allocated Image struct
+// built from the operations on the src slice in the BEAM
 #[derive(Debug, NifStruct)]
 #[module = "Thumbelina.Image"]
 pub struct Image {
     pub extension: String,
     pub height: u32,
     pub width: u32,
-    pub bytes: Vec<u8>, // Binary<u8>
-    // todo pub path: String,
+    pub bytes: Vec<u8>,
     pub compressed: bool,
 }
 

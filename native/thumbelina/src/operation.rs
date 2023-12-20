@@ -1,10 +1,8 @@
-use std::io;
-use std::io::ErrorKind::Unsupported;
-// use std::sync::Mutex;
 use crate::image::{Direction, Image};
 use image::{imageops::FilterType::Nearest, DynamicImage, ImageError, ImageFormat};
 use rustler::{error, NifUnitEnum};
-
+use std::io;
+use std::io::ErrorKind::Unsupported;
 // use log::trace;
 
 /// Public enum/atom representing the different image operations that can be performed.
@@ -18,12 +16,12 @@ pub enum Operation {
     Greyscale,
     Resize,
     Thumbnail,
-    Rotate
+    Rotate,
 }
 
 pub enum StreamOperation {
-   Compress,
-   Decompress
+    Compress,
+    Decompress,
 }
 
 pub fn perform(
