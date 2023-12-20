@@ -1,11 +1,11 @@
 use crate::image::{Direction, Image};
 use crate::operation;
-use crate::operation::{Operation, StreamOperation};
+use crate::operation::Operation;
 use crate::worker;
 
 use rayon::prelude::*;
 use rustler::types::LocalPid;
-use rustler::{Atom, Binary, Error, NifResult};
+use rustler::{Atom, Binary, Error, NifResult, ListIterator};
 
 pub mod atoms {
     rustler::atoms! {ok, noop, error, png, jpeg, svg, resize, thumbnail,
@@ -36,13 +36,13 @@ pub fn cast<'a>(
 #[rustler::nif(schedule = "DirtyCpu")]
 pub fn batch<'a>(
     operation: Operation,
-    binaries: Vec<Binary<'a>>,
+    binaries: ListIterator,
     extension: &'a str,
     width: f32,
     height: f32,
 ) -> NifResult<(Atom, Vec<Image>)> {
     let images = binaries
-        .iter()
+        .filter_map(|bin| bin.decode::<Binary>().ok())
         .map(|bin| bin.as_slice())
         .collect::<Vec<&[u8]>>()
         .into_par_iter()
@@ -58,20 +58,6 @@ pub fn batch<'a>(
     Ok((atoms::ok(), images))
 }
 
-#[rustler::nif]
-pub fn stream_compress<'a>(pid: LocalPid, bin: Binary<'a>) -> NifResult<Atom> {
-    worker::background_stream(StreamOperation::Compress, pid, bin.as_slice());
-
-    Ok(atoms::ok())
-}
-
-#[rustler::nif]
-pub fn stream_decompress<'a>(pid: LocalPid, bin: Vec<u8>) -> NifResult<Atom> {
-    worker::background_stream(StreamOperation::Decompress, pid, bin.as_slice());
-
-    Ok(atoms::ok())
-}
-
 #[rustler::nif(schedule = "DirtyCpu")]
 pub fn block_compress<'a>(bin: Binary<'a>) -> NifResult<(Atom, Image)> {
     match operation::stream_compress(bin.as_slice()) {
@@ -81,7 +67,7 @@ pub fn block_compress<'a>(bin: Binary<'a>) -> NifResult<(Atom, Image)> {
 }
 
 #[rustler::nif(schedule = "DirtyCpu")]
-pub fn block_decompress<'a>(bin: Vec<u8>) -> NifResult<(Atom, Image)> {
+pub fn block_decompress(bin: Vec<u8>) -> NifResult<(Atom, Image)> {
     match operation::block_decompress(bin.as_slice()) {
         Ok(buffer) => Ok((atoms::ok(), Image::from_compressed(buffer).expect("wtf"))),
         Err(err) => Err(Error::Term(Box::new(err.to_string()))),

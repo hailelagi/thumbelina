@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 
 use crate::image::Image;
 use crate::operation;
-use crate::operation::{Operation, StreamOperation};
+use crate::operation::Operation;
 use crate::task;
 use crate::thumbelina;
 
@@ -19,13 +19,6 @@ pub struct Success {
 pub struct Failure {
     pub op: Atom,
     pub reason: String,
-}
-
-pub fn background_stream(_op: StreamOperation, _pid: LocalPid, _buffer: &[u8]) {
-    // let env = OwnedEnv::new();
-    // let buffer = buffer.to_owned();
-
-    // todo
 }
 
 pub fn background_process(

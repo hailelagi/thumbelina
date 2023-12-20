@@ -38,9 +38,6 @@ defmodule Thumbelina.Internal do
   def block_compress(_), do: error()
   def block_decompress(_), do: error()
 
-  def stream_compress(_, _), do: error()
-  def stream_decompress(_, _), do: error()
-
   # Batch Parallelised Image Processing (Dirty CPU)
   def batch(_, _, _, _, _), do: error()
 
