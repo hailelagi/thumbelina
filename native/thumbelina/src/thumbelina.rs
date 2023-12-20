@@ -5,7 +5,7 @@ use crate::worker;
 
 use rayon::prelude::*;
 use rustler::types::LocalPid;
-use rustler::{Atom, Binary, Error, NifResult, ListIterator};
+use rustler::{Atom, Binary, Error, ListIterator, NifResult};
 
 pub mod atoms {
     rustler::atoms! {ok, noop, error, png, jpeg, svg, resize, thumbnail,
