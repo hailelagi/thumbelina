@@ -43,6 +43,27 @@ defmodule Thumbelina.Image do
     end
   end
 
-  # todo: expand supported formats
-  defp supported_extension?(e), do: Enum.member?([".png", ".jpg", ".jpeg"], e)
+  defp supported_extension?(e),
+    do:
+      Enum.member?(
+        [
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".gif",
+          ".pnm",
+          ".webp",
+          ".tiff",
+          ".tga",
+          ".dds",
+          ".bmp",
+          ".ico",
+          ".hdr",
+          ".openexr",
+          ".farbfeld",
+          ".avif",
+          ".qoi"
+        ],
+        e
+      )
 end
