@@ -10,10 +10,9 @@ defmodule Thumbelina do
   @spec open(String.t(), map()) :: result()
   def open(path, opts \\ %{}) do
     ext = Path.extname(path)
-    source = Map.get(opts, :source, :disk)
 
     with {:ok, binary} <- File.read(path),
-         %Image{} = image <- Image.new(ext, path, binary, source) do
+         %Image{} = image <- Image.new(ext, binary) do
       {:ok, image}
     else
       err -> err

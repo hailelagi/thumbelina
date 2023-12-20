@@ -35,11 +35,6 @@ defmodule Thumbelina.Internal do
   def brighten(_, _, _), do: error()
   def greyscale(_, _), do: error()
 
-  # def contrast(_), do: error()
-  # def filter_3x3(_), do: error()
-  # def invert(_), do: error()
-  # def unsharpen(_), do: error()
-
   def block_compress(_), do: error()
   def block_decompress(_), do: error()
 

@@ -12,8 +12,6 @@ pub mod atoms {
     flip_horizontal, flip_vertical, rotate, blur, brighten, greyscale}
 }
 
-// TODO: provide opt-in time outs and cancellations
-
 // Asynchronously clone erlang owned bytes and write them to a new buffer
 // within the managed tokio runtime address space, casting it to a `DynamicImage` performing an `Operation`
 // and replying back to the client process immediately with an :ok or `:noop`.

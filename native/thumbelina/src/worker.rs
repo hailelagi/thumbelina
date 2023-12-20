@@ -49,6 +49,9 @@ pub fn background_process(
             let buffer = Arc::clone(&buffered_lock);
             let buffer = match buffer.read() {
                 Ok(buffer) => buffer,
+                // try your best, this will likely propagate an error down the stack
+                // when doing the raw byte manipulation if it doesn't outright panic,
+                // there shouldn't be a reasonable situation where the read only lock gets poisoned
                 Err(err) => err.into_inner(),
             };
 
