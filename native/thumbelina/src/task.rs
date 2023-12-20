@@ -9,7 +9,6 @@ use tokio::task::JoinHandle;
 // but rather lazily on the first call to `spawn` whenever the first NIF is called.
 static TOKIO: Lazy<Runtime> = Lazy::new(|| {
     Builder::new_multi_thread()
-        // todo: log warning <=  System.schedulers_online() / 2
         .worker_threads(set_workers())
         .build()
         .expect("Thumbelina.Internal - no runtime!")
@@ -27,10 +26,6 @@ where
 fn set_workers() -> usize {
     match env::var("TOKIO_WORKER_THREADS") {
         Ok(val) => val.parse().unwrap(),
-        Err(_e) =>
-        // TODO: LOG AND WARN USING DEFAULT ERROR
-        {
-            2
-        }
+        Err(_e) => 1,
     }
 }

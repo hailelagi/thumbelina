@@ -8,6 +8,7 @@ pub mod worker;
 
 fn load(env: Env, _: Term) -> bool {
     rustler::resource!(image::Image, env);
+
     true
 }
 
@@ -27,8 +28,7 @@ rustler::init!(
         thumbelina::block_compress,
         thumbelina::block_decompress,
         thumbelina::stream_compress,
-        thumbelina::stream_decompress
-        //   thumbelina::crop,
+        thumbelina::stream_decompress //   thumbelina::crop,
     ],
     load = load
 );
