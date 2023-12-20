@@ -49,7 +49,7 @@ pub fn background_process(
             let buffer = Arc::clone(&buffered_lock);
             let buffer = match buffer.read() {
                 Ok(buffer) => buffer,
-                Err(err) => err.into_inner()
+                Err(err) => err.into_inner(),
             };
 
             let result = operation::perform(operation, width, height, extension, &buffer);
